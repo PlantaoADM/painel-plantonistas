@@ -1,2003 +1,2131 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+<title>Painel de Plantonistas</title>
 
-  <title>Painel de Plantonistas</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
 
-  <style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f8;
+    color: #202124;
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+.oculto {
+    display: none !important;
+}
+
+/* ======================================================
+LOGIN
+====================================================== */
+
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 5px 25px rgba(0,0,0,.08);
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-logo h1 {
+    font-size: 26px;
+    margin-bottom: 6px;
+}
+
+.auth-logo p {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+/* ======================================================
+CAMPOS / BOTÕES
+====================================================== */
+
+.campo {
+    margin-bottom: 17px;
+}
+
+.campo label {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 9px;
+    border: 1px solid #cfd5dc;
+    outline: none;
+    font-size: 15px;
+    background: white;
+}
+
+.campo input:focus,
+.campo select:focus {
+    border-color: #197659;
+    box-shadow: 0 0 0 3px rgba(25,118,89,.10);
+}
+
+.btn {
+    border: none;
+    border-radius: 9px;
+    padding: 12px 17px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-principal {
+    background: #197659;
+    color: white;
+}
+
+.btn-secundario {
+    background: white;
+    color: #197659;
+    border: 1px solid #197659;
+}
+
+.btn-vermelho {
+    background: #c62828;
+    color: white;
+}
+
+.btn-cinza {
+    background: #e7eaee;
+    color: #333;
+}
+
+.btn:hover {
+    opacity: .9;
+}
+
+.auth-card .btn {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.esqueci {
+    display: block;
+    text-align: center;
+    margin-top: 16px;
+    color: #197659;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.mensagem-erro {
+    color: #d32f2f;
+    margin-top: 15px;
+}
+
+.mensagem-sucesso {
+    color: #197659;
+    margin-top: 15px;
+}
+
+/* ======================================================
+TOPO
+====================================================== */
+
+.topbar {
+    min-height: 62px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 24px;
+}
+
+.titulo-app h1 {
+    font-size: 21px;
+}
+
+.titulo-app p {
+    margin-top: 3px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.btn-sair {
+    background: #c62828;
+    color: white;
+}
+
+/* ======================================================
+MENU
+====================================================== */
+
+.menu {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 24px;
+    display: flex;
+    gap: 6px;
+}
+
+.menu button {
+    background: transparent;
+    border: none;
+    padding: 16px 18px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: #667085;
+    border-bottom: 3px solid transparent;
+}
+
+.menu button.ativo {
+    color: #197659;
+    border-bottom-color: #197659;
+}
+
+/* ======================================================
+CONTEÚDO
+====================================================== */
+
+.conteudo {
+    width: 95%;
+    max-width: 1400px;
+    margin: 26px auto 60px;
+}
+
+/* ======================================================
+CARDS
+====================================================== */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 13px;
+    border: 1px solid #eceff1;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+}
+
+.card span {
+    display: block;
+    color: #667085;
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.card strong {
+    font-size: 30px;
+}
+
+.card small {
+    display: block;
+    color: #9097a1;
+    margin-top: 7px;
+}
+
+/* ======================================================
+PAINÉIS
+====================================================== */
+
+.painel {
+    background: white;
+    border-radius: 13px;
+    border: 1px solid #eceff1;
+    box-shadow: 0 2px 10px rgba(0,0,0,.04);
+    overflow: hidden;
+    margin-bottom: 22px;
+}
+
+.painel-cabecalho {
+    padding: 20px;
+    border-bottom: 1px solid #eceff1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.painel-cabecalho h2 {
+    font-size: 19px;
+}
+
+.painel-cabecalho p {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* ======================================================
+FILTROS
+====================================================== */
+
+.barra-controle {
+    background: white;
+    border: 1px solid #eceff1;
+    border-radius: 13px;
+    padding: 17px;
+    margin-bottom: 20px;
+
+    display: grid;
+    grid-template-columns: 190px 180px 1fr;
+    gap: 12px;
+}
+
+.barra-controle .campo {
+    margin: 0;
+}
+
+/* ======================================================
+CADASTRO
+====================================================== */
+
+.formulario-cadastro {
+    padding: 22px;
+}
+
+.grade-formulario {
+    display: grid;
+    grid-template-columns: 170px 2fr 220px 180px 170px;
+    gap: 14px;
+}
+
+.acoes-formulario {
+    display: flex;
+    gap: 10px;
+    margin-top: 3px;
+}
+
+.acoes-formulario .btn {
+    min-width: 140px;
+}
+
+.info-edicao {
+    display: none;
+    background: #fff6d8;
+    padding: 11px 15px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    color: #795d00;
+}
+
+/* ======================================================
+TABELAS
+====================================================== */
+
+.tabela-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 850px;
+}
+
+thead {
+    background: #f7f8fa;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 13px 15px;
+    border-bottom: 1px solid #eceff1;
+    font-size: 14px;
+}
+
+th {
+    font-size: 12px;
+    color: #59636e;
+    text-transform: uppercase;
+}
+
+tbody tr:hover {
+    background: #fafafa;
+}
+
+.badge {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.badge-disponivel {
+    background: #e5f6ee;
+    color: #177245;
+}
+
+.badge-cobertura {
+    background: #e5efff;
+    color: #1b5faf;
+}
+
+.badge-inativo {
+    background: #f5e6e6;
+    color: #a72b2b;
+}
+
+.acoes-tabela {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-pequeno {
+    padding: 7px 10px;
+    font-size: 12px;
+}
+
+.sem-dados {
+    text-align: center;
+    padding: 35px !important;
+    color: #818995;
+}
+
+/* ======================================================
+RESPONSIVO
+====================================================== */
+
+@media(max-width: 1000px) {
+
+    .cards {
+        grid-template-columns: repeat(2,1fr);
     }
 
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f6f8;
-      color: #202124;
+    .grade-formulario {
+        grid-template-columns: 1fr 1fr;
     }
 
-    button,
-    input,
-    select,
-    textarea {
-      font-family: inherit;
+}
+
+@media(max-width: 800px) {
+
+    .barra-controle {
+        grid-template-columns: 1fr;
     }
 
-    .oculto {
-      display: none !important;
-    }
+}
 
-    /* ==============================
-       LOGIN
-    ============================== */
-
-    .auth-wrapper {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .auth-card {
-      width: 100%;
-      max-width: 430px;
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow:
-        0 5px 25px rgba(0,0,0,0.08);
-    }
-
-    .auth-logo {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .auth-logo h1 {
-      font-size: 26px;
-      margin-bottom: 6px;
-    }
-
-    .auth-logo p {
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .campo {
-      margin-bottom: 18px;
-    }
-
-    .campo label {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 7px;
-      font-weight: 600;
-    }
-
-    .campo input,
-    .campo select,
-    .campo textarea {
-      width: 100%;
-      padding: 13px 14px;
-      border-radius: 9px;
-      border: 1px solid #cfd5dc;
-      outline: none;
-      font-size: 15px;
-      transition: 0.2s;
-      background: white;
-    }
-
-    .campo input:focus,
-    .campo select:focus,
-    .campo textarea:focus {
-      border-color: #197659;
-      box-shadow:
-        0 0 0 3px rgba(25,118,89,0.10);
-    }
-
-    .btn {
-      border: none;
-      border-radius: 9px;
-      padding: 13px 18px;
-      font-weight: bold;
-      font-size: 15px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      opacity: 0.9;
-    }
-
-    .btn-principal {
-      width: 100%;
-      background: #197659;
-      color: white;
-    }
-
-    .btn-secundario {
-      width: 100%;
-      background: white;
-      color: #197659;
-      border: 1px solid #197659;
-    }
-
-    .btn-vermelho {
-      background: #c62828;
-      color: white;
-    }
-
-    .esqueci {
-      display: block;
-      text-align: center;
-      margin-top: 15px;
-      color: #197659;
-      cursor: pointer;
-      text-decoration: underline;
-      font-size: 14px;
-    }
-
-    .mensagem-erro {
-      margin-top: 15px;
-      color: #d32f2f;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    .mensagem-sucesso {
-      margin-top: 15px;
-      color: #197659;
-      font-size: 14px;
-      line-height: 1.4;
-    }
-
-    /* ==============================
-       APLICATIVO
-    ============================== */
-
-    #appTela {
-      min-height: 100vh;
-    }
+@media(max-width: 600px) {
 
     .topbar {
-      height: 68px;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 28px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
+        padding: 10px 15px;
     }
 
-    .titulo-app h1 {
-      font-size: 21px;
+    .menu {
+        padding: 0 10px;
     }
 
-    .titulo-app p {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 3px;
-    }
-
-    .acoes-topo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-sair {
-      background: #c62828;
-      color: white;
-      padding: 10px 16px;
+    .menu button {
+        padding: 14px 10px;
+        font-size: 13px;
     }
 
     .conteudo {
-      width: 95%;
-      max-width: 1400px;
-      margin: 25px auto 50px;
+        width: 95%;
     }
-
-    /* ==============================
-       RESUMO
-    ============================== */
 
     .cards {
-      display: grid;
-      grid-template-columns:
-        repeat(4, minmax(160px, 1fr));
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 13px;
-      padding: 20px;
-      box-shadow:
-        0 2px 10px rgba(0,0,0,0.05);
-      border: 1px solid #eceff1;
-    }
-
-    .card span {
-      display: block;
-      color: #6b7280;
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    .card strong {
-      font-size: 30px;
-      font-weight: 700;
-    }
-
-    .card small {
-      display: block;
-      margin-top: 5px;
-      color: #9097a1;
-    }
-
-    /* ==============================
-       BARRA DE CONTROLE
-    ============================== */
-
-    .barra-controle {
-      background: white;
-      border-radius: 13px;
-      padding: 17px;
-      margin-bottom: 20px;
-      border: 1px solid #eceff1;
-      box-shadow:
-        0 2px 10px rgba(0,0,0,0.04);
-
-      display: grid;
-      grid-template-columns:
-        190px 180px 1fr;
-      gap: 12px;
-      align-items: end;
-    }
-
-    .barra-controle .campo {
-      margin: 0;
-    }
-
-    /* ==============================
-       PAINEL
-    ============================== */
-
-    .painel {
-      background: white;
-      border-radius: 13px;
-      border: 1px solid #eceff1;
-      box-shadow:
-        0 2px 10px rgba(0,0,0,0.04);
-      overflow: hidden;
-    }
-
-    .painel-cabecalho {
-      padding: 20px;
-      border-bottom: 1px solid #eceff1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .painel-cabecalho h2 {
-      font-size: 19px;
-    }
-
-    .painel-cabecalho p {
-      color: #6b7280;
-      font-size: 13px;
-      margin-top: 4px;
-    }
-
-    .tabela-wrapper {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 850px;
-    }
-
-    thead {
-      background: #f7f8fa;
-    }
-
-    th,
-    td {
-      text-align: left;
-      padding: 13px 15px;
-      border-bottom: 1px solid #eceff1;
-      font-size: 14px;
-    }
-
-    th {
-      font-size: 12px;
-      color: #59636e;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    tbody tr:hover {
-      background: #fafafa;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .badge-disponivel {
-      background: #e5f6ee;
-      color: #177245;
-    }
-
-    .badge-cobertura {
-      background: #e5efff;
-      color: #1b5faf;
-    }
-
-    .badge-inativo {
-      background: #f4e8e8;
-      color: #a72b2b;
-    }
-
-    .sem-dados {
-      padding: 35px !important;
-      text-align: center;
-      color: #818995;
-    }
-
-    /* ==============================
-       RESPONSIVO
-    ============================== */
-
-    @media(max-width: 900px) {
-
-      .cards {
-        grid-template-columns:
-          repeat(2, 1fr);
-      }
-
-      .barra-controle {
-        grid-template-columns: 1fr;
-      }
-
-    }
-
-    @media(max-width: 600px) {
-
-      .topbar {
-        padding: 0 15px;
-      }
-
-      .titulo-app h1 {
-        font-size: 17px;
-      }
-
-      .titulo-app p {
-        display: none;
-      }
-
-      .conteudo {
-        width: 94%;
-      }
-
-      .cards {
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-      }
-
-      .card {
-        padding: 15px;
-      }
-
-      .card strong {
-        font-size: 25px;
-      }
-
     }
 
-  </style>
-</head>
+    .grade-formulario {
+        grid-template-columns: 1fr;
+    }
 
+    .acoes-formulario {
+        flex-direction: column;
+    }
+
+}
+
+</style>
+</head>
 
 <body>
 
-
 <!-- ======================================================
-     LOGIN
+LOGIN
 ====================================================== -->
 
-<div
-  id="loginTela"
-  class="auth-wrapper"
->
+<div id="loginTela" class="auth-wrapper">
 
-  <div class="auth-card">
+<div class="auth-card">
 
-    <div class="auth-logo">
+<div class="auth-logo">
+<h1>Escala do Plantão</h1>
+<p>Painel de controle dos plantonistas</p>
+</div>
 
-      <h1>
-        Escala do Plantão
-      </h1>
+<div class="campo">
+<label>E-mail</label>
+<input id="email" type="email" placeholder="Digite seu e-mail">
+</div>
 
-      <p>
-        Painel de controle dos plantonistas
-      </p>
+<div class="campo">
+<label>Senha</label>
+<input id="senha" type="password" placeholder="Digite sua senha">
+</div>
 
-    </div>
+<button class="btn btn-principal" onclick="entrar()">
+Entrar
+</button>
 
+<span class="esqueci" onclick="abrirRecuperacao()">
+Esqueci minha senha
+</span>
 
-    <div class="campo">
-
-      <label>
-        E-mail
-      </label>
-
-      <input
-        id="email"
-        type="email"
-        placeholder="Digite seu e-mail"
-        autocomplete="email"
-      >
-
-    </div>
-
-
-    <div class="campo">
-
-      <label>
-        Senha
-      </label>
-
-      <input
-        id="senha"
-        type="password"
-        placeholder="Digite sua senha"
-        autocomplete="current-password"
-      >
-
-    </div>
-
-
-    <button
-      class="btn btn-principal"
-      onclick="entrar()"
-    >
-      Entrar
-    </button>
-
-
-    <span
-      class="esqueci"
-      onclick="abrirRecuperacao()"
-    >
-      Esqueci minha senha
-    </span>
-
-
-    <div
-      id="erroLogin"
-      class="mensagem-erro"
-    ></div>
-
-  </div>
+<div id="erroLogin" class="mensagem-erro"></div>
 
 </div>
 
-
+</div>
 
 <!-- ======================================================
-     RECUPERAÇÃO
+RECUPERAR SENHA
 ====================================================== -->
 
-<div
-  id="recuperarTela"
-  class="auth-wrapper oculto"
->
+<div id="recuperarTela" class="auth-wrapper oculto">
 
-  <div class="auth-card">
+<div class="auth-card">
 
-    <div class="auth-logo">
+<div class="auth-logo">
+<h1>Recuperar senha</h1>
+<p>Informe seu e-mail.</p>
+</div>
 
-      <h1>
-        Recuperar senha
-      </h1>
+<div class="campo">
+<label>E-mail</label>
+<input id="emailRecuperacao" type="email">
+</div>
 
-      <p>
-        Informe seu e-mail para receber
-        um link de recuperação.
-      </p>
+<button class="btn btn-principal" onclick="enviarRecuperacao()">
+Enviar recuperação
+</button>
 
-    </div>
+<button class="btn btn-secundario" onclick="voltarLogin()">
+Voltar
+</button>
 
-
-    <div class="campo">
-
-      <label>
-        E-mail
-      </label>
-
-      <input
-        id="emailRecuperacao"
-        type="email"
-        placeholder="Digite seu e-mail"
-      >
-
-    </div>
-
-
-    <button
-      class="btn btn-principal"
-      onclick="enviarRecuperacao()"
-    >
-      Enviar recuperação
-    </button>
-
-
-    <button
-      class="btn btn-secundario"
-      onclick="voltarLogin()"
-    >
-      Voltar
-    </button>
-
-
-    <div
-      id="mensagemRecuperacao"
-    ></div>
-
-  </div>
+<div id="mensagemRecuperacao"></div>
 
 </div>
 
-
+</div>
 
 <!-- ======================================================
-     NOVA SENHA
+NOVA SENHA
 ====================================================== -->
 
-<div
-  id="novaSenhaTela"
-  class="auth-wrapper oculto"
->
+<div id="novaSenhaTela" class="auth-wrapper oculto">
 
-  <div class="auth-card">
+<div class="auth-card">
 
-    <div class="auth-logo">
+<div class="auth-logo">
+<h1>Nova senha</h1>
+<p>Crie uma nova senha.</p>
+</div>
 
-      <h1>
-        Nova senha
-      </h1>
+<div class="campo">
+<label>Nova senha</label>
+<input id="novaSenha" type="password">
+</div>
 
-      <p>
-        Crie uma nova senha de acesso.
-      </p>
+<div class="campo">
+<label>Confirmar senha</label>
+<input id="confirmarNovaSenha" type="password">
+</div>
 
-    </div>
+<button class="btn btn-principal" onclick="alterarSenha()">
+Alterar senha
+</button>
 
-
-    <div class="campo">
-
-      <label>
-        Nova senha
-      </label>
-
-      <input
-        id="novaSenha"
-        type="password"
-        placeholder="Digite a nova senha"
-      >
-
-    </div>
-
-
-    <div class="campo">
-
-      <label>
-        Confirmar senha
-      </label>
-
-      <input
-        id="confirmarNovaSenha"
-        type="password"
-        placeholder="Repita a nova senha"
-      >
-
-    </div>
-
-
-    <button
-      class="btn btn-principal"
-      onclick="alterarSenha()"
-    >
-      Alterar senha
-    </button>
-
-
-    <div
-      id="mensagemNovaSenha"
-    ></div>
-
-  </div>
+<div id="mensagemNovaSenha"></div>
 
 </div>
 
-
+</div>
 
 <!-- ======================================================
-     APLICATIVO
+APLICATIVO
 ====================================================== -->
 
-<div
-  id="appTela"
-  class="oculto"
->
+<div id="appTela" class="oculto">
 
-  <header class="topbar">
+<header class="topbar">
 
-    <div class="titulo-app">
+<div class="titulo-app">
+<h1>Painel de Plantonistas</h1>
+<p id="dataHoje"></p>
+</div>
 
-      <h1>
-        Painel de Plantonistas
-      </h1>
+<button class="btn btn-sair" onclick="sair()">
+Sair
+</button>
 
-      <p id="dataHoje">
-        -
-      </p>
+</header>
 
-    </div>
+<!-- MENU -->
 
+<nav class="menu">
 
-    <div class="acoes-topo">
+<button
+id="menuEscala"
+class="ativo"
+onclick="abrirAba('escala')">
+Escala
+</button>
 
-      <button
-        class="btn btn-sair"
-        onclick="sair()"
-      >
-        Sair
-      </button>
+<button
+id="menuMotoristas"
+onclick="abrirAba('motoristas')">
+Cadastro de Motoristas
+</button>
 
-    </div>
+</nav>
 
-  </header>
+<!-- ======================================================
+ABA ESCALA
+====================================================== -->
 
+<div id="abaEscala">
 
-  <main class="conteudo">
+<main class="conteudo">
 
+<section class="cards">
 
-    <!-- RESUMO -->
+<div class="card">
+<span>Total de Plantonistas</span>
+<strong id="totalPlantonistas">0</strong>
+<small>ativos cadastrados</small>
+</div>
 
-    <section class="cards">
+<div class="card">
+<span>Disponíveis</span>
+<strong id="totalDisponiveis">0</strong>
+<small>disponíveis hoje</small>
+</div>
 
-      <div class="card">
+<div class="card">
+<span>Em Cobertura</span>
+<strong id="totalCobertura">0</strong>
+<small>escalados hoje</small>
+</div>
 
-        <span>
-          Total de Plantonistas
-        </span>
+<div class="card">
+<span>Data consultada</span>
+<strong id="dataCard" style="font-size:20px;">-</strong>
+<small>situação da escala</small>
+</div>
 
-        <strong
-          id="totalPlantonistas"
-        >
-          0
-        </strong>
+</section>
 
-        <small>
-          ativos cadastrados
-        </small>
+<section class="barra-controle">
 
-      </div>
+<div class="campo">
+<label>Data</label>
+<input
+type="date"
+id="filtroData"
+onchange="carregarEscala()">
+</div>
 
+<div class="campo">
+<label>Período</label>
 
-      <div class="card">
+<select id="filtroPeriodo" onchange="carregarEscala()">
 
-        <span>
-          Disponíveis
-        </span>
+<option value="">Todos</option>
+<option value="Manhã">Manhã</option>
+<option value="Tarde">Tarde</option>
+<option value="Noite">Noite</option>
 
-        <strong
-          id="totalDisponiveis"
-        >
-          0
-        </strong>
-
-        <small>
-          disponíveis hoje
-        </small>
-
-      </div>
-
-
-      <div class="card">
-
-        <span>
-          Em Cobertura
-        </span>
-
-        <strong
-          id="totalCobertura"
-        >
-          0
-        </strong>
-
-        <small>
-          escalados hoje
-        </small>
-
-      </div>
-
-
-      <div class="card">
-
-        <span>
-          Data consultada
-        </span>
-
-        <strong
-          id="dataCard"
-          style="font-size:20px;"
-        >
-          -
-        </strong>
-
-        <small>
-          situação da escala
-        </small>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- FILTROS -->
-
-    <section class="barra-controle">
-
-      <div class="campo">
-
-        <label>
-          Data
-        </label>
-
-        <input
-          type="date"
-          id="filtroData"
-          onchange="carregarEscala()"
-        >
-
-      </div>
-
-
-      <div class="campo">
-
-        <label>
-          Período
-        </label>
-
-        <select
-          id="filtroPeriodo"
-          onchange="carregarEscala()"
-        >
-
-          <option value="">
-            Todos
-          </option>
-
-          <option value="Manhã">
-            Manhã
-          </option>
-
-          <option value="Tarde">
-            Tarde
-          </option>
-
-          <option value="Noite">
-            Noite
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <div class="campo">
-
-        <label>
-          Pesquisar
-        </label>
-
-        <input
-          type="text"
-          id="pesquisa"
-          placeholder="Matrícula ou nome do plantonista..."
-          oninput="filtrarTabela()"
-        >
-
-      </div>
-
-    </section>
-
-
-
-    <!-- TABELA -->
-
-    <section class="painel">
-
-      <div class="painel-cabecalho">
-
-        <div>
-
-          <h2>
-            Escala
-          </h2>
-
-          <p>
-            Situação diária dos plantonistas
-          </p>
-
-        </div>
-
-      </div>
-
-
-      <div class="tabela-wrapper">
-
-        <table>
-
-          <thead>
-
-            <tr>
-
-              <th>
-                Matrícula
-              </th>
-
-              <th>
-                Plantonista
-              </th>
-
-              <th>
-                Período
-              </th>
-
-              <th>
-                Horário
-              </th>
-
-              <th>
-                Situação
-              </th>
-
-              <th>
-                Linha
-              </th>
-
-              <th>
-                Motivo
-              </th>
-
-              <th>
-                Período da cobertura
-              </th>
-
-            </tr>
-
-          </thead>
-
-
-          <tbody
-            id="tabelaEscala"
-          >
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    </section>
-
-  </main>
+</select>
 
 </div>
 
+<div class="campo">
 
+<label>Pesquisar</label>
+
+<input
+type="text"
+id="pesquisa"
+placeholder="Matrícula ou nome do plantonista..."
+oninput="filtrarTabela()">
+
+</div>
+
+</section>
+
+<section class="painel">
+
+<div class="painel-cabecalho">
+
+<div>
+<h2>Escala</h2>
+<p>Situação diária dos plantonistas</p>
+</div>
+
+</div>
+
+<div class="tabela-wrapper">
+
+<table>
+
+<thead>
+<tr>
+<th>Matrícula</th>
+<th>Plantonista</th>
+<th>Período</th>
+<th>Horário</th>
+<th>Situação</th>
+<th>Linha</th>
+<th>Motivo</th>
+<th>Período da cobertura</th>
+</tr>
+</thead>
+
+<tbody id="tabelaEscala"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+<!-- ======================================================
+ABA MOTORISTAS
+====================================================== -->
+
+<div id="abaMotoristas" class="oculto">
+
+<main class="conteudo">
+
+<section class="painel">
+
+<div class="painel-cabecalho">
+
+<div>
+<h2>Cadastrar Motorista</h2>
+<p>Cadastro dos plantonistas disponíveis para escala</p>
+</div>
+
+</div>
+
+<div class="formulario-cadastro">
+
+<div id="avisoEdicao" class="info-edicao">
+Você está editando um motorista já cadastrado.
+</div>
+
+<input type="hidden" id="motoristaId">
+
+<div class="grade-formulario">
+
+<div class="campo">
+
+<label>Matrícula *</label>
+
+<input
+id="cadMatricula"
+type="text"
+placeholder="Ex.: 33733">
+
+</div>
+
+<div class="campo">
+
+<label>Nome completo *</label>
+
+<input
+id="cadNome"
+type="text"
+placeholder="Nome completo do motorista">
+
+</div>
+
+<div class="campo">
+
+<label>Telefone</label>
+
+<input
+id="cadTelefone"
+type="text"
+placeholder="Ex.: 5511999999999">
+
+</div>
+
+<div class="campo">
+
+<label>Período *</label>
+
+<select id="cadPeriodo">
+
+<option value="">Selecione</option>
+<option value="Manhã">Manhã</option>
+<option value="Tarde">Tarde</option>
+<option value="Noite">Noite</option>
+
+</select>
+
+</div>
+
+<div class="campo">
+
+<label>Horário base</label>
+
+<input
+id="cadHorario"
+type="time">
+
+</div>
+
+</div>
+
+<div class="acoes-formulario">
+
+<button
+class="btn btn-principal"
+id="btnSalvarMotorista"
+onclick="salvarMotorista()">
+
+Cadastrar Motorista
+
+</button>
+
+<button
+class="btn btn-cinza oculto"
+id="btnCancelarEdicao"
+onclick="cancelarEdicao()">
+
+Cancelar edição
+
+</button>
+
+</div>
+
+<div
+id="mensagemCadastro"
+style="margin-top:15px;">
+</div>
+
+</div>
+
+</section>
+
+<!-- LISTAGEM -->
+
+<section class="painel">
+
+<div class="painel-cabecalho">
+
+<div>
+<h2>Motoristas Cadastrados</h2>
+<p>Gerencie os motoristas do Plantão</p>
+</div>
+
+</div>
+
+<div style="padding:15px 20px;">
+
+<div class="campo" style="margin:0;">
+
+<input
+id="pesquisaMotorista"
+type="text"
+placeholder="Pesquisar matrícula ou nome..."
+oninput="filtrarMotoristas()">
+
+</div>
+
+</div>
+
+<div class="tabela-wrapper">
+
+<table>
+
+<thead>
+<tr>
+
+<th>Matrícula</th>
+<th>Nome</th>
+<th>Telefone</th>
+<th>Período</th>
+<th>Horário</th>
+<th>Status</th>
+<th>Ações</th>
+
+</tr>
+</thead>
+
+<tbody id="tabelaMotoristas"></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+</div>
 
 <script>
 
 /* ============================================================
-   CONFIGURAÇÃO DO SUPABASE
+SUPABASE
 ============================================================ */
 
 const SUPABASE_URL =
-  "https://chmkhlfmbvnppygjhxsx.supabase.co";
-
+"COLE_AQUI_SEU_PROJECT_URL";
 
 const SUPABASE_KEY =
-  "sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
-
+"COLE_AQUI_SUA_PUBLISHABLE_KEY";
 
 const supabaseClient =
-  supabase.createClient(
+supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
-  );
-
+);
 
 const URL_SISTEMA =
-  "https://plantaaoadm.github.io/painel-plantonistas/";
-
-
-
-/* ============================================================
-   VARIÁVEIS
-============================================================ */
+"https://plantaaoadm.github.io/painel-plantonistas/";
 
 let dadosTabela = [];
-
-
+let listaMotoristas = [];
 
 /* ============================================================
-   TELAS
+TELAS
 ============================================================ */
 
 function esconderTelas() {
 
-  document
+    document
     .getElementById("loginTela")
     .classList.add("oculto");
 
-
-  document
+    document
     .getElementById("recuperarTela")
     .classList.add("oculto");
 
-
-  document
+    document
     .getElementById("novaSenhaTela")
     .classList.add("oculto");
 
-
-  document
+    document
     .getElementById("appTela")
     .classList.add("oculto");
 
 }
 
-
-
 function voltarLogin() {
 
-  esconderTelas();
+    esconderTelas();
 
-
-  document
+    document
     .getElementById("loginTela")
     .classList.remove("oculto");
 
 }
 
-
-
 function abrirRecuperacao() {
 
-  esconderTelas();
+    esconderTelas();
 
-
-  const email =
     document
-      .getElementById("email")
-      .value
-      .trim();
-
-
-  document
     .getElementById("emailRecuperacao")
-    .value = email;
+    .value =
+    document
+    .getElementById("email")
+    .value.trim();
 
-
-  document
+    document
     .getElementById("recuperarTela")
     .classList.remove("oculto");
 
 }
 
+/* ============================================================
+ABAS
+============================================================ */
 
+async function abrirAba(aba) {
+
+    document
+    .getElementById("abaEscala")
+    .classList.add("oculto");
+
+    document
+    .getElementById("abaMotoristas")
+    .classList.add("oculto");
+
+    document
+    .getElementById("menuEscala")
+    .classList.remove("ativo");
+
+    document
+    .getElementById("menuMotoristas")
+    .classList.remove("ativo");
+
+
+    if (aba === "escala") {
+
+        document
+        .getElementById("abaEscala")
+        .classList.remove("oculto");
+
+        document
+        .getElementById("menuEscala")
+        .classList.add("ativo");
+
+        await carregarEscala();
+
+    }
+
+    if (aba === "motoristas") {
+
+        document
+        .getElementById("abaMotoristas")
+        .classList.remove("oculto");
+
+        document
+        .getElementById("menuMotoristas")
+        .classList.add("ativo");
+
+        await carregarMotoristas();
+
+    }
+
+}
 
 /* ============================================================
-   LOGIN
+LOGIN
 ============================================================ */
 
 async function entrar() {
 
-  const email =
+    const email =
     document
-      .getElementById("email")
-      .value
-      .trim();
+    .getElementById("email")
+    .value.trim();
 
-
-  const senha =
+    const senha =
     document
-      .getElementById("senha")
-      .value;
+    .getElementById("senha")
+    .value;
 
-
-  const erroLogin =
+    const erroLogin =
     document
-      .getElementById("erroLogin");
+    .getElementById("erroLogin");
 
+    erroLogin.innerText = "";
 
-  erroLogin.innerText = "";
+    if (!email || !senha) {
 
+        erroLogin.innerText =
+        "Informe o e-mail e a senha.";
 
-  if (!email || !senha) {
-
-    erroLogin.innerText =
-      "Informe o e-mail e a senha.";
-
-    return;
-
-  }
-
-
-  try {
-
-    const {
-      data,
-      error
-    } =
-      await supabaseClient
-        .auth
-        .signInWithPassword({
-
-          email: email,
-          password: senha
-
-        });
-
-
-    if (error) {
-
-      console.error(
-        "ERRO LOGIN SUPABASE:",
-        error
-      );
-
-
-      erroLogin.innerText =
-        "Erro Supabase: " +
-        error.message;
-
-      return;
+        return;
 
     }
 
+    try {
 
-    console.log(
-      "LOGIN REALIZADO:",
-      data
-    );
+        const { error } =
+        await supabaseClient
+        .auth
+        .signInWithPassword({
+            email,
+            password: senha
+        });
 
+        if (error) {
 
-    await mostrarSistema();
+            erroLogin.innerText =
+            "Erro Supabase: " +
+            error.message;
 
+            return;
 
-  } catch (erro) {
+        }
 
-    console.error(
-      "ERRO GERAL LOGIN:",
-      erro
-    );
+        await mostrarSistema();
 
+    } catch (erro) {
 
-    erroLogin.innerText =
-      "Erro: " +
-      erro.message;
+        erroLogin.innerText =
+        erro.message;
 
-  }
+    }
 
 }
 
-
-
 /* ============================================================
-   LOGOUT
+SAIR
 ============================================================ */
 
 async function sair() {
 
-  await supabaseClient
-    .auth
-    .signOut();
+    await supabaseClient.auth.signOut();
 
-
-  document
+    document
     .getElementById("senha")
     .value = "";
 
-
-  voltarLogin();
+    voltarLogin();
 
 }
 
-
-
 /* ============================================================
-   RECUPERAÇÃO DE SENHA
+RECUPERAÇÃO
 ============================================================ */
 
 async function enviarRecuperacao() {
 
-  const email =
+    const email =
     document
-      .getElementById("emailRecuperacao")
-      .value
-      .trim();
+    .getElementById("emailRecuperacao")
+    .value.trim();
 
-
-  const mensagem =
+    const mensagem =
     document
-      .getElementById("mensagemRecuperacao");
+    .getElementById("mensagemRecuperacao");
 
+    if (!email) {
 
-  mensagem.className = "";
-  mensagem.innerText = "";
+        mensagem.className =
+        "mensagem-erro";
 
+        mensagem.innerText =
+        "Informe o e-mail.";
 
-  if (!email) {
+        return;
 
-    mensagem.className =
-      "mensagem-erro";
+    }
 
-
-    mensagem.innerText =
-      "Informe seu e-mail.";
-
-    return;
-
-  }
-
-
-  const {
-    error
-  } =
+    const { error } =
     await supabaseClient
-      .auth
-      .resetPasswordForEmail(
-
+    .auth
+    .resetPasswordForEmail(
         email,
-
         {
-          redirectTo:
+            redirectTo:
             URL_SISTEMA
         }
+    );
 
-      );
+    if (error) {
 
+        mensagem.className =
+        "mensagem-erro";
 
-  if (error) {
+        mensagem.innerText =
+        error.message;
 
-    console.error(error);
+        return;
 
+    }
 
     mensagem.className =
-      "mensagem-erro";
-
-
-    mensagem.innerText =
-      "Erro: " +
-      error.message;
-
-    return;
-
-  }
-
-
-  mensagem.className =
     "mensagem-sucesso";
 
-
-  mensagem.innerText =
+    mensagem.innerText =
     "E-mail de recuperação enviado.";
 
 }
 
-
-
 /* ============================================================
-   ALTERAR SENHA
+ALTERAR SENHA
 ============================================================ */
 
 async function alterarSenha() {
 
-  const senha =
+    const senha =
     document
-      .getElementById("novaSenha")
-      .value;
+    .getElementById("novaSenha")
+    .value;
 
-
-  const confirmar =
+    const confirmar =
     document
-      .getElementById("confirmarNovaSenha")
-      .value;
+    .getElementById("confirmarNovaSenha")
+    .value;
 
-
-  const mensagem =
+    const mensagem =
     document
-      .getElementById("mensagemNovaSenha");
+    .getElementById("mensagemNovaSenha");
 
+    if (senha.length < 6) {
 
-  mensagem.innerText = "";
+        mensagem.className =
+        "mensagem-erro";
 
+        mensagem.innerText =
+        "A senha precisa ter pelo menos 6 caracteres.";
 
-  if (senha.length < 6) {
+        return;
 
-    mensagem.className =
-      "mensagem-erro";
+    }
 
+    if (senha !== confirmar) {
 
-    mensagem.innerText =
-      "A senha precisa ter pelo menos 6 caracteres.";
+        mensagem.className =
+        "mensagem-erro";
 
-    return;
+        mensagem.innerText =
+        "As senhas são diferentes.";
 
-  }
+        return;
 
+    }
 
-  if (senha !== confirmar) {
-
-    mensagem.className =
-      "mensagem-erro";
-
-
-    mensagem.innerText =
-      "As senhas são diferentes.";
-
-    return;
-
-  }
-
-
-  const {
-    error
-  } =
+    const { error } =
     await supabaseClient
-      .auth
-      .updateUser({
-
+    .auth
+    .updateUser({
         password: senha
+    });
 
-      });
+    if (error) {
 
+        mensagem.className =
+        "mensagem-erro";
 
-  if (error) {
+        mensagem.innerText =
+        error.message;
+
+        return;
+
+    }
 
     mensagem.className =
-      "mensagem-erro";
-
-
-    mensagem.innerText =
-      "Erro: " +
-      error.message;
-
-    return;
-
-  }
-
-
-  mensagem.className =
     "mensagem-sucesso";
 
-
-  mensagem.innerText =
+    mensagem.innerText =
     "Senha alterada com sucesso.";
-
-
-  setTimeout(
-
-    async () => {
-
-      await mostrarSistema();
-
-    },
-
-    900
-
-  );
 
 }
 
-
-
 /* ============================================================
-   DATA LOCAL
+DATAS
 ============================================================ */
 
 function obterDataLocal() {
 
-  const data =
-    new Date();
+    const data = new Date();
 
-
-  const ano =
+    const ano =
     data.getFullYear();
 
-
-  const mes =
+    const mes =
     String(
-      data.getMonth() + 1
-    )
-    .padStart(
-      2,
-      "0"
-    );
+        data.getMonth() + 1
+    ).padStart(2,"0");
 
-
-  const dia =
+    const dia =
     String(
-      data.getDate()
-    )
-    .padStart(
-      2,
-      "0"
-    );
+        data.getDate()
+    ).padStart(2,"0");
 
-
-  return `${ano}-${mes}-${dia}`;
+    return `${ano}-${mes}-${dia}`;
 
 }
 
+function formatarData(data) {
 
+    if (!data) return "-";
 
-function formatarData(
-  data
-) {
-
-  if (!data) {
-    return "-";
-  }
-
-
-  const partes =
+    const partes =
     data.split("-");
 
-
-  return (
-    partes[2] +
-    "/" +
-    partes[1] +
-    "/" +
-    partes[0]
-  );
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 
 }
 
+function formatarHorario(horario) {
 
+    if (!horario) return "-";
+
+    return horario.substring(0,5);
+
+}
 
 /* ============================================================
-   ABRIR SISTEMA
+MOSTRAR SISTEMA
 ============================================================ */
 
 async function mostrarSistema() {
 
-  esconderTelas();
+    esconderTelas();
 
-
-  document
+    document
     .getElementById("appTela")
     .classList.remove("oculto");
 
-
-  const agora =
+    const agora =
     new Date();
 
-
-  document
+    document
     .getElementById("dataHoje")
     .innerText =
     agora.toLocaleDateString(
-      "pt-BR",
-      {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      }
+        "pt-BR",
+        {
+            weekday:"long",
+            day:"2-digit",
+            month:"long",
+            year:"numeric"
+        }
     );
 
+    if (
+        !document
+        .getElementById("filtroData")
+        .value
+    ) {
 
-  const filtroData =
-    document
-      .getElementById("filtroData");
+        document
+        .getElementById("filtroData")
+        .value =
+        obterDataLocal();
 
+    }
 
-  if (!filtroData.value) {
-
-    filtroData.value =
-      obterDataLocal();
-
-  }
-
-
-  await carregarEscala();
+    await abrirAba("escala");
 
 }
 
-
-
 /* ============================================================
-   CARREGAR ESCALA
+CARREGAR ESCALA
 ============================================================ */
 
 async function carregarEscala() {
 
-  const dataSelecionada =
+    const dataSelecionada =
     document
-      .getElementById("filtroData")
-      .value ||
+    .getElementById("filtroData")
+    .value ||
     obterDataLocal();
 
-
-  const periodo =
+    const periodo =
     document
-      .getElementById("filtroPeriodo")
-      .value;
+    .getElementById("filtroPeriodo")
+    .value;
 
-
-  document
+    document
     .getElementById("dataCard")
     .innerText =
-    formatarData(
-      dataSelecionada
-    );
+    formatarData(dataSelecionada);
 
-
-  let consultaPlantonistas =
+    let consulta =
     supabaseClient
-      .from("plantonistas")
-      .select("*")
-      .eq("ativo", true)
-      .order("nome");
+    .from("plantonistas")
+    .select("*")
+    .eq("ativo",true)
+    .order("nome");
 
+    if (periodo) {
 
-  if (periodo) {
-
-    consultaPlantonistas =
-      consultaPlantonistas
-        .eq(
-          "periodo",
-          periodo
+        consulta =
+        consulta.eq(
+            "periodo",
+            periodo
         );
-
-  }
-
-
-  const {
-    data: plantonistas,
-    error: erroPlantonistas
-  } =
-    await consultaPlantonistas;
-
-
-  if (erroPlantonistas) {
-
-    console.error(
-      "ERRO PLANTONISTAS:",
-      erroPlantonistas
-    );
-
-
-    alert(
-      "Erro ao carregar plantonistas: " +
-      erroPlantonistas.message
-    );
-
-    return;
-
-  }
-
-
-
-  const {
-    data: escalas,
-    error: erroEscalas
-  } =
-    await supabaseClient
-      .from("escalas")
-      .select("*")
-      .lte(
-        "data_inicio",
-        dataSelecionada
-      )
-      .gte(
-        "data_fim",
-        dataSelecionada
-      );
-
-
-  if (erroEscalas) {
-
-    console.error(
-      "ERRO ESCALAS:",
-      erroEscalas
-    );
-
-
-    alert(
-      "Erro ao carregar escalas: " +
-      erroEscalas.message
-    );
-
-    return;
-
-  }
-
-
-
-  dadosTabela = [];
-
-
-  let disponiveis = 0;
-  let coberturas = 0;
-
-
-
-  plantonistas.forEach(
-
-    plantonista => {
-
-
-      const escala =
-        escalas.find(
-
-          item =>
-            item.plantonista_id ===
-            plantonista.id
-
-        );
-
-
-      const registro = {
-
-        matricula:
-          plantonista.matricula,
-
-        nome:
-          plantonista.nome,
-
-        periodo:
-          plantonista.periodo || "-",
-
-        horario:
-          plantonista.horario_base || "-",
-
-        situacao:
-          escala
-            ? "Em cobertura"
-            : "Disponível",
-
-        linha:
-          escala?.linha || "-",
-
-        motivo:
-          escala?.motivo || "-",
-
-        data_inicio:
-          escala?.data_inicio || null,
-
-        data_fim:
-          escala?.data_fim || null
-
-      };
-
-
-      if (escala) {
-
-        coberturas++;
-
-      } else {
-
-        disponiveis++;
-
-      }
-
-
-      dadosTabela.push(
-        registro
-      );
 
     }
 
-  );
+    const {
+        data: plantonistas,
+        error: erroPlantonistas
+    } =
+    await consulta;
 
+    if (erroPlantonistas) {
 
-  document
+        alert(
+            "Erro ao carregar plantonistas: " +
+            erroPlantonistas.message
+        );
+
+        return;
+
+    }
+
+    const {
+        data: escalas,
+        error: erroEscalas
+    } =
+    await supabaseClient
+    .from("escalas")
+    .select("*")
+    .lte(
+        "data_inicio",
+        dataSelecionada
+    )
+    .gte(
+        "data_fim",
+        dataSelecionada
+    );
+
+    if (erroEscalas) {
+
+        alert(
+            "Erro ao carregar escalas: " +
+            erroEscalas.message
+        );
+
+        return;
+
+    }
+
+    dadosTabela = [];
+
+    let disponiveis = 0;
+    let coberturas = 0;
+
+    plantonistas.forEach(
+        plantonista => {
+
+            const escala =
+            escalas.find(
+                e =>
+                e.plantonista_id ===
+                plantonista.id
+            );
+
+            if (escala) {
+                coberturas++;
+            } else {
+                disponiveis++;
+            }
+
+            dadosTabela.push({
+
+                matricula:
+                plantonista.matricula,
+
+                nome:
+                plantonista.nome,
+
+                periodo:
+                plantonista.periodo,
+
+                horario:
+                formatarHorario(
+                    plantonista.horario_base
+                ),
+
+                situacao:
+                escala
+                ? "Em cobertura"
+                : "Disponível",
+
+                linha:
+                escala?.linha || "-",
+
+                motivo:
+                escala?.motivo || "-",
+
+                inicio:
+                escala?.data_inicio,
+
+                fim:
+                escala?.data_fim
+
+            });
+
+        }
+    );
+
+    document
     .getElementById("totalPlantonistas")
     .innerText =
     plantonistas.length;
 
-
-  document
+    document
     .getElementById("totalDisponiveis")
     .innerText =
     disponiveis;
 
-
-  document
+    document
     .getElementById("totalCobertura")
     .innerText =
     coberturas;
 
-
-  filtrarTabela();
+    filtrarTabela();
 
 }
 
-
-
 /* ============================================================
-   FILTRAR TABELA
+TABELA ESCALA
 ============================================================ */
 
 function filtrarTabela() {
 
-  const pesquisa =
+    const pesquisa =
     document
-      .getElementById("pesquisa")
-      .value
-      .toLowerCase()
-      .trim();
+    .getElementById("pesquisa")
+    .value
+    .toLowerCase();
 
-
-  const filtrados =
+    const dados =
     dadosTabela.filter(
-
-      item => {
-
-        return (
-
-          item.nome
-            .toLowerCase()
-            .includes(
-              pesquisa
-            )
-
-          ||
-
-          String(
-            item.matricula
-          )
-          .toLowerCase()
-          .includes(
-            pesquisa
-          )
-
-        );
-
-      }
-
+        item =>
+        item.nome
+        .toLowerCase()
+        .includes(pesquisa)
+        ||
+        String(item.matricula)
+        .includes(pesquisa)
     );
 
-
-  montarTabela(
-    filtrados
-  );
-
-}
-
-
-
-/* ============================================================
-   MONTAR TABELA
-============================================================ */
-
-function montarTabela(
-  dados
-) {
-
-  const tbody =
+    const tbody =
     document
-      .getElementById("tabelaEscala");
+    .getElementById("tabelaEscala");
 
+    tbody.innerHTML = "";
 
-  tbody.innerHTML = "";
+    if (!dados.length) {
 
-
-  if (
-    dados.length === 0
-  ) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td
-          colspan="8"
-          class="sem-dados"
-        >
-          Nenhum plantonista encontrado.
+        tbody.innerHTML = `
+        <tr>
+        <td colspan="8" class="sem-dados">
+        Nenhum plantonista encontrado.
         </td>
-      </tr>
-    `;
-
-    return;
-
-  }
-
-
-  dados.forEach(
-
-    item => {
-
-
-      const tr =
-        document
-          .createElement("tr");
-
-
-      let badge;
-
-
-      if (
-        item.situacao ===
-        "Em cobertura"
-      ) {
-
-        badge = `
-          <span
-            class="
-              badge
-              badge-cobertura
-            "
-          >
-            Em cobertura
-          </span>
+        </tr>
         `;
-
-      } else {
-
-        badge = `
-          <span
-            class="
-              badge
-              badge-disponivel
-            "
-          >
-            Disponível
-          </span>
-        `;
-
-      }
-
-
-      let periodoCobertura =
-        "-";
-
-
-      if (
-        item.data_inicio &&
-        item.data_fim
-      ) {
-
-        periodoCobertura =
-          formatarData(
-            item.data_inicio
-          )
-          +
-          " até "
-          +
-          formatarData(
-            item.data_fim
-          );
-
-      }
-
-
-      tr.innerHTML = `
-
-        <td>
-          ${item.matricula}
-        </td>
-
-        <td>
-          <strong>
-            ${item.nome}
-          </strong>
-        </td>
-
-        <td>
-          ${item.periodo}
-        </td>
-
-        <td>
-          ${item.horario}
-        </td>
-
-        <td>
-          ${badge}
-        </td>
-
-        <td>
-          ${item.linha}
-        </td>
-
-        <td>
-          ${item.motivo}
-        </td>
-
-        <td>
-          ${periodoCobertura}
-        </td>
-
-      `;
-
-
-      tbody.appendChild(
-        tr
-      );
-
-    }
-
-  );
-
-}
-
-
-
-/* ============================================================
-   EVENTOS DE AUTENTICAÇÃO
-============================================================ */
-
-supabaseClient
-  .auth
-  .onAuthStateChange(
-
-    async (
-      event,
-      session
-    ) => {
-
-
-      console.log(
-        "AUTH EVENT:",
-        event
-      );
-
-
-      if (
-        event ===
-        "PASSWORD_RECOVERY"
-      ) {
-
-        esconderTelas();
-
-
-        document
-          .getElementById("novaSenhaTela")
-          .classList.remove("oculto");
 
         return;
 
-      }
+    }
 
+    dados.forEach(
+        item => {
 
-      if (
-        event ===
-        "SIGNED_OUT"
-      ) {
+            const badge =
+            item.situacao ===
+            "Em cobertura"
+            ?
+            `<span class="badge badge-cobertura">Em cobertura</span>`
+            :
+            `<span class="badge badge-disponivel">Disponível</span>`;
 
-        voltarLogin();
+            let cobertura = "-";
 
-      }
+            if (
+                item.inicio &&
+                item.fim
+            ) {
+
+                cobertura =
+                `${formatarData(item.inicio)} até ${formatarData(item.fim)}`;
+
+            }
+
+            tbody.innerHTML += `
+            <tr>
+
+            <td>${item.matricula}</td>
+
+            <td>
+            <strong>${item.nome}</strong>
+            </td>
+
+            <td>${item.periodo || "-"}</td>
+
+            <td>${item.horario}</td>
+
+            <td>${badge}</td>
+
+            <td>${item.linha}</td>
+
+            <td>${item.motivo}</td>
+
+            <td>${cobertura}</td>
+
+            </tr>
+            `;
+
+        }
+    );
+
+}
+
+/* ============================================================
+CADASTRAR / EDITAR MOTORISTA
+============================================================ */
+
+async function salvarMotorista() {
+
+    const id =
+    document
+    .getElementById("motoristaId")
+    .value;
+
+    const matricula =
+    document
+    .getElementById("cadMatricula")
+    .value.trim();
+
+    const nome =
+    document
+    .getElementById("cadNome")
+    .value.trim()
+    .toUpperCase();
+
+    const telefone =
+    document
+    .getElementById("cadTelefone")
+    .value.trim();
+
+    const periodo =
+    document
+    .getElementById("cadPeriodo")
+    .value;
+
+    const horario =
+    document
+    .getElementById("cadHorario")
+    .value;
+
+    const mensagem =
+    document
+    .getElementById("mensagemCadastro");
+
+    mensagem.innerText = "";
+
+    if (
+        !matricula ||
+        !nome ||
+        !periodo
+    ) {
+
+        mensagem.className =
+        "mensagem-erro";
+
+        mensagem.innerText =
+        "Preencha Matrícula, Nome e Período.";
+
+        return;
 
     }
 
-  );
+    const registro = {
 
+        matricula,
+        nome,
+        telefone:
+        telefone || null,
 
+        periodo,
+
+        horario_base:
+        horario || null,
+
+        ativo:true
+
+    };
+
+    let resposta;
+
+    if (id) {
+
+        resposta =
+        await supabaseClient
+        .from("plantonistas")
+        .update(registro)
+        .eq("id",id);
+
+    } else {
+
+        resposta =
+        await supabaseClient
+        .from("plantonistas")
+        .insert([registro]);
+
+    }
+
+    if (resposta.error) {
+
+        mensagem.className =
+        "mensagem-erro";
+
+        if (
+            resposta.error.code ===
+            "23505"
+        ) {
+
+            mensagem.innerText =
+            "Essa matrícula já está cadastrada.";
+
+        } else {
+
+            mensagem.innerText =
+            "Erro: " +
+            resposta.error.message;
+
+        }
+
+        return;
+
+    }
+
+    mensagem.className =
+    "mensagem-sucesso";
+
+    mensagem.innerText =
+    id
+    ? "Motorista atualizado com sucesso."
+    : "Motorista cadastrado com sucesso.";
+
+    limparFormulario();
+
+    await carregarMotoristas();
+
+}
 
 /* ============================================================
-   INICIALIZAÇÃO
+CARREGAR MOTORISTAS
+============================================================ */
+
+async function carregarMotoristas() {
+
+    const {
+        data,
+        error
+    } =
+    await supabaseClient
+    .from("plantonistas")
+    .select("*")
+    .order("nome");
+
+    if (error) {
+
+        alert(
+            "Erro ao carregar motoristas: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+    listaMotoristas =
+    data || [];
+
+    filtrarMotoristas();
+
+}
+
+/* ============================================================
+FILTRAR MOTORISTAS
+============================================================ */
+
+function filtrarMotoristas() {
+
+    const busca =
+    document
+    .getElementById("pesquisaMotorista")
+    .value
+    .toLowerCase()
+    .trim();
+
+    const filtrados =
+    listaMotoristas.filter(
+        item =>
+        item.nome
+        .toLowerCase()
+        .includes(busca)
+        ||
+        String(
+            item.matricula
+        )
+        .toLowerCase()
+        .includes(busca)
+    );
+
+    montarTabelaMotoristas(
+        filtrados
+    );
+
+}
+
+/* ============================================================
+LISTA MOTORISTAS
+============================================================ */
+
+function montarTabelaMotoristas(dados) {
+
+    const tbody =
+    document
+    .getElementById("tabelaMotoristas");
+
+    tbody.innerHTML = "";
+
+    if (!dados.length) {
+
+        tbody.innerHTML = `
+        <tr>
+        <td colspan="7" class="sem-dados">
+        Nenhum motorista cadastrado.
+        </td>
+        </tr>
+        `;
+
+        return;
+
+    }
+
+    dados.forEach(
+        motorista => {
+
+            const status =
+            motorista.ativo
+            ?
+            `<span class="badge badge-disponivel">Ativo</span>`
+            :
+            `<span class="badge badge-inativo">Inativo</span>`;
+
+            tbody.innerHTML += `
+            <tr>
+
+            <td>
+            ${motorista.matricula}
+            </td>
+
+            <td>
+            <strong>
+            ${motorista.nome}
+            </strong>
+            </td>
+
+            <td>
+            ${motorista.telefone || "-"}
+            </td>
+
+            <td>
+            ${motorista.periodo || "-"}
+            </td>
+
+            <td>
+            ${formatarHorario(motorista.horario_base)}
+            </td>
+
+            <td>
+            ${status}
+            </td>
+
+            <td>
+
+            <div class="acoes-tabela">
+
+            <button
+            class="btn btn-secundario btn-pequeno"
+            onclick="editarMotorista(${motorista.id})">
+            Editar
+            </button>
+
+            <button
+            class="btn btn-vermelho btn-pequeno"
+            onclick="excluirMotorista(${motorista.id})">
+            Excluir
+            </button>
+
+            </div>
+
+            </td>
+
+            </tr>
+            `;
+
+        }
+    );
+
+}
+
+/* ============================================================
+EDITAR
+============================================================ */
+
+function editarMotorista(id) {
+
+    const motorista =
+    listaMotoristas.find(
+        item =>
+        item.id === id
+    );
+
+    if (!motorista)
+    return;
+
+    document
+    .getElementById("motoristaId")
+    .value =
+    motorista.id;
+
+    document
+    .getElementById("cadMatricula")
+    .value =
+    motorista.matricula;
+
+    document
+    .getElementById("cadNome")
+    .value =
+    motorista.nome;
+
+    document
+    .getElementById("cadTelefone")
+    .value =
+    motorista.telefone || "";
+
+    document
+    .getElementById("cadPeriodo")
+    .value =
+    motorista.periodo || "";
+
+    document
+    .getElementById("cadHorario")
+    .value =
+    motorista.horario_base
+    ?
+    motorista.horario_base.substring(0,5)
+    :
+    "";
+
+    document
+    .getElementById("btnSalvarMotorista")
+    .innerText =
+    "Salvar Alterações";
+
+    document
+    .getElementById("btnCancelarEdicao")
+    .classList.remove("oculto");
+
+    document
+    .getElementById("avisoEdicao")
+    .style.display =
+    "block";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+/* ============================================================
+CANCELAR EDIÇÃO
+============================================================ */
+
+function cancelarEdicao() {
+
+    limparFormulario();
+
+}
+
+/* ============================================================
+LIMPAR
+============================================================ */
+
+function limparFormulario() {
+
+    document
+    .getElementById("motoristaId")
+    .value = "";
+
+    document
+    .getElementById("cadMatricula")
+    .value = "";
+
+    document
+    .getElementById("cadNome")
+    .value = "";
+
+    document
+    .getElementById("cadTelefone")
+    .value = "";
+
+    document
+    .getElementById("cadPeriodo")
+    .value = "";
+
+    document
+    .getElementById("cadHorario")
+    .value = "";
+
+    document
+    .getElementById("btnSalvarMotorista")
+    .innerText =
+    "Cadastrar Motorista";
+
+    document
+    .getElementById("btnCancelarEdicao")
+    .classList.add("oculto");
+
+    document
+    .getElementById("avisoEdicao")
+    .style.display =
+    "none";
+
+}
+
+/* ============================================================
+EXCLUIR
+============================================================ */
+
+async function excluirMotorista(id) {
+
+    const motorista =
+    listaMotoristas.find(
+        item =>
+        item.id === id
+    );
+
+    if (!motorista)
+    return;
+
+    const confirmar =
+    confirm(
+        `Deseja realmente excluir ${motorista.nome}?`
+    );
+
+    if (!confirmar)
+    return;
+
+    const {
+        error
+    } =
+    await supabaseClient
+    .from("plantonistas")
+    .delete()
+    .eq("id",id);
+
+    if (error) {
+
+        alert(
+            "Erro ao excluir motorista: " +
+            error.message
+        );
+
+        return;
+
+    }
+
+    await carregarMotoristas();
+
+}
+
+/* ============================================================
+AUTENTICAÇÃO
+============================================================ */
+
+supabaseClient
+.auth
+.onAuthStateChange(
+    async (
+        event,
+        session
+    ) => {
+
+        if (
+            event ===
+            "PASSWORD_RECOVERY"
+        ) {
+
+            esconderTelas();
+
+            document
+            .getElementById("novaSenhaTela")
+            .classList.remove("oculto");
+
+        }
+
+    }
+);
+
+/* ============================================================
+INICIAR
 ============================================================ */
 
 async function iniciarSistema() {
 
-  const hash =
-    window.location.hash;
-
-
-  const query =
-    window.location.search;
-
-
-  const recuperacao =
-
-    hash.includes(
-      "type=recovery"
-    )
-
-    ||
-
-    query.includes(
-      "type=recovery"
-    );
-
-
-  if (recuperacao) {
-
-    esconderTelas();
-
-
-    document
-      .getElementById("novaSenhaTela")
-      .classList.remove("oculto");
-
-    return;
-
-  }
-
-
-
-  const {
-    data,
-    error
-  } =
+    const {
+        data,
+        error
+    } =
     await supabaseClient
-      .auth
-      .getSession();
+    .auth
+    .getSession();
 
+    if (error) {
 
-  if (error) {
+        voltarLogin();
 
-    console.error(
-      "ERRO SESSION:",
-      error
-    );
+        return;
 
+    }
 
-    voltarLogin();
+    if (
+        data.session
+    ) {
 
-    return;
+        await mostrarSistema();
 
-  }
+    } else {
 
+        voltarLogin();
 
-  if (
-    data.session
-  ) {
-
-    await mostrarSistema();
-
-  } else {
-
-    voltarLogin();
-
-  }
+    }
 
 }
-
-
 
 iniciarSistema();
 
