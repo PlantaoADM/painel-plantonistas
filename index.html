@@ -2,602 +2,126 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Painel de Plantonistas</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;color:#202124}
-button,input,select,textarea{font-family:inherit}
-.oculto{display:none!important}
-.auth-wrapper{min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
-.auth-card{width:100%;max-width:430px;background:#fff;border-radius:16px;padding:32px;box-shadow:0 5px 25px rgba(0,0,0,.08)}
-.auth-logo{text-align:center;margin-bottom:28px}
-.auth-logo h1{font-size:26px;margin-bottom:6px}
-.auth-logo p{color:#6b7280;font-size:14px}
-.campo{margin-bottom:16px}
-.campo label{display:block;font-size:14px;margin-bottom:7px;font-weight:600}
-.campo input,.campo select,.campo textarea{width:100%;padding:12px 14px;border-radius:9px;border:1px solid #cfd5dc;outline:none;font-size:15px;background:#fff}
-.campo textarea{min-height:90px;resize:vertical}
-.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:#197659;box-shadow:0 0 0 3px rgba(25,118,89,.10)}
-.btn{border:none;border-radius:9px;padding:11px 16px;font-weight:bold;cursor:pointer;font-size:14px}
-.btn:hover{opacity:.9}
-.btn-principal{background:#197659;color:#fff}
-.btn-secundario{background:#fff;color:#197659;border:1px solid #197659}
-.btn-vermelho{background:#c62828;color:#fff}
-.btn-cinza{background:#e7eaee;color:#333}
-.btn-azul{background:#2463eb;color:#fff}
-.btn-amarelo{background:#d99800;color:#fff}
-.btn-pequeno{padding:7px 10px;font-size:12px}
-.mensagem-erro{color:#d32f2f;margin-top:14px}
-.mensagem-sucesso{color:#197659;margin-top:14px}
-.esqueci{display:block;text-align:center;margin-top:16px;color:#197659;text-decoration:underline;cursor:pointer}
-.topbar{min-height:64px;background:#fff;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;padding:8px 24px;position:sticky;top:0;z-index:50}
-.titulo-app h1{font-size:21px}
-.titulo-app p{margin-top:3px;font-size:13px;color:#6b7280}
-.menu{background:#fff;border-bottom:1px solid #e5e7eb;padding:0 24px;display:flex;gap:4px;overflow-x:auto}
-.menu button{background:transparent;border:none;padding:15px 16px;cursor:pointer;font-size:14px;font-weight:bold;color:#667085;border-bottom:3px solid transparent;white-space:nowrap}
-.menu button.ativo{color:#197659;border-bottom-color:#197659}
-.conteudo{width:95%;max-width:1450px;margin:24px auto 60px}
-.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
-.card{background:#fff;padding:18px;border-radius:13px;border:1px solid #eceff1;box-shadow:0 2px 10px rgba(0,0,0,.04);cursor:pointer}
-.card span{display:block;color:#667085;font-size:13px;margin-bottom:9px}
-.card strong{font-size:29px}
-.card small{display:block;color:#9097a1;margin-top:6px}
-.painel{background:#fff;border-radius:13px;border:1px solid #eceff1;box-shadow:0 2px 10px rgba(0,0,0,.04);overflow:hidden;margin-bottom:20px}
-.painel-cabecalho{padding:18px 20px;border-bottom:1px solid #eceff1;display:flex;justify-content:space-between;align-items:center;gap:15px}
-.painel-cabecalho h2{font-size:19px}
-.painel-cabecalho p{font-size:13px;color:#6b7280;margin-top:4px}
-.grid-form{padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.grid-form .campo{margin:0}
-.acoes-formulario{padding:0 20px 20px;display:flex;gap:10px;flex-wrap:wrap}
-.filtros{background:#fff;border:1px solid #eceff1;border-radius:13px;padding:16px;margin-bottom:20px;display:grid;grid-template-columns:160px 160px 180px 180px 1fr;gap:10px;align-items:end}
-.filtros .campo{margin:0}
-.tabela-wrapper{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:900px}
-thead{background:#f7f8fa}
-th,td{text-align:left;padding:12px 14px;border-bottom:1px solid #eceff1;font-size:14px}
-th{font-size:12px;color:#59636e;text-transform:uppercase}
-tbody tr:hover{background:#fafafa}
-.nome-click{color:#197659;font-weight:700;cursor:pointer;text-decoration:underline}
-.badge{display:inline-flex;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold}
-.badge-disponivel{background:#e5f6ee;color:#177245}
-.badge-cobertura{background:#e5efff;color:#1b5faf}
-.badge-indisponivel{background:#fde8e8;color:#a72b2b}
-.badge-alerta{background:#fff2cc;color:#8a6500}
-.badge-cancelado{background:#eee;color:#666}
-.sem-dados{text-align:center;padding:32px!important;color:#818995}
-.acoes-tabela{display:flex;gap:6px;flex-wrap:wrap}
-.lista-alertas{padding:16px 20px}
-.alerta-item{padding:12px;border-bottom:1px solid #eee}
-.alerta-item:last-child{border-bottom:none}
-.visao-mensal{overflow:auto}
-.matriz{border-collapse:collapse;min-width:1200px}
-.matriz th,.matriz td{padding:7px;text-align:center;font-size:12px;min-width:42px}
-.matriz th:first-child,.matriz td:first-child{position:sticky;left:0;background:#fff;z-index:2;min-width:210px;text-align:left}
-.celula-dia{border-radius:7px;padding:5px 3px;font-weight:bold}
-.dia-disponivel{background:#e5f6ee;color:#177245}
-.dia-cobertura{background:#e5efff;color:#1b5faf}
-.dia-indisponivel{background:#fde8e8;color:#a72b2b}
-.dia-vazio{background:#f3f4f6;color:#9ca3af}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}
-.modal-card{background:#fff;width:min(1000px,96vw);max-height:92vh;overflow:auto;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.modal-topo{padding:18px 20px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
-.modal-conteudo{padding:20px}
-.calendario-cab{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
-.calendario-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
-.calendario-dia-semana{font-size:12px;font-weight:bold;color:#667085;text-align:center;padding:6px}
-.cal-dia{min-height:90px;border:1px solid #e5e7eb;border-radius:10px;padding:7px;background:#fff}
-.cal-dia .num{font-size:12px;font-weight:bold;margin-bottom:6px}
-.cal-dia .estado{font-size:11px;line-height:1.35}
-.cal-dia.disponivel{background:#eefaf4}
-.cal-dia.cobertura{background:#eef4ff}
-.cal-dia.indisponivel{background:#fff0f0}
-.cal-dia.vazio{background:#f8f8f8}
-.resumo-motorista{margin-top:18px}
-.resumo-item{padding:10px 0;border-bottom:1px solid #eee;font-size:14px}
-.resumo-item:last-child{border-bottom:none}
-.kpi-duplo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.whatsapp{color:#178b4f;font-weight:bold}
-.status-pendente{color:#a72b2b;font-weight:bold}
-.status-ok{color:#177245;font-weight:bold}
-@media(max-width:1100px){.cards{grid-template-columns:repeat(3,1fr)}.grid-form{grid-template-columns:repeat(2,1fr)}.filtros{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:700px){.cards{grid-template-columns:repeat(2,1fr)}.grid-form{grid-template-columns:1fr}.filtros{grid-template-columns:1fr}.topbar{padding:10px 14px}.menu{padding:0 8px}.conteudo{width:96%}.cal-dia{min-height:72px;padding:5px}.modal{padding:8px}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7f8;color:#202124}
+.hide{display:none!important}.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box,.panel{background:#fff;border:1px solid #e6e9ec;border-radius:14px;box-shadow:0 3px 15px #0000000d}
+.box{width:420px;max-width:100%;padding:30px}.box h1{margin:0 0 6px}.muted{color:#6b7280;font-size:13px}
+label{font-size:13px;font-weight:700;display:block;margin:0 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid #ccd2d8;border-radius:8px;font-size:14px}
+.field{margin:14px 0}.btn{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}.green{background:#197659;color:#fff}.white{background:#fff;color:#197659;border:1px solid #197659}.red{background:#c62828;color:#fff}.gray{background:#e9ecef}.blue{background:#2563eb;color:#fff}
+header{background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 3%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+header h1{font-size:20px;margin:0}main{width:94%;max-width:1450px;margin:22px auto 50px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}
+.card{background:#fff;border:1px solid #e7eaed;border-radius:12px;padding:17px;cursor:pointer}.card span{color:#68717d;font-size:13px}.card strong{display:block;font-size:28px;margin-top:6px}
+.filters{display:grid;grid-template-columns:150px 150px 180px 180px 1fr;gap:10px;padding:16px}.panel{overflow:hidden}.paneltop{padding:16px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:850px}th,td{padding:12px 14px;border-bottom:1px solid #eee;text-align:left;font-size:14px}th{background:#f8f9fa;color:#606a76;font-size:12px}
+.name{font-weight:700;color:#197659;text-decoration:underline;cursor:pointer}.badge{padding:5px 9px;border-radius:20px;font-size:12px;font-weight:700}.available{background:#e6f7ef;color:#176d46}.cover{background:#e8f0ff;color:#245eb5}.off{background:#fdeaea;color:#a92c2c}
+.modal{position:fixed;inset:0;background:#0007;display:flex;align-items:center;justify-content:center;padding:15px;z-index:30}.modalbox{background:#fff;width:min(900px,98vw);max-height:94vh;overflow:auto;border-radius:14px}.modaltop{padding:16px 18px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center}.modalbody{padding:18px}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.formgrid .field{margin:0}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.dow{text-align:center;font-size:11px;font-weight:700;color:#6b7280;padding:6px}.day{border:1px solid #e2e5e8;border-radius:8px;min-height:78px;padding:6px;font-size:11px}.day b{display:block;margin-bottom:5px}.day.available{background:#eefaf4}.day.cover{background:#eef4ff}.day.off{background:#fff0f0}.day.blank{background:#fafafa}
+.summary{margin-top:16px}.summary div{padding:8px 0;border-bottom:1px solid #eee;font-size:13px}.msg{margin-top:10px;font-size:13px}.err{color:#c62828}.ok{color:#197659}
+@media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}.filters{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.filters,.formgrid{grid-template-columns:1fr}.day{min-height:62px}.cards{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
+<div id="login" class="login">
+ <div class="box"><h1>Escala do Plantão</h1><div class="muted">Acesso ao painel de plantonistas</div>
+  <div class="field"><label>E-mail</label><input id="email" type="email"></div>
+  <div class="field"><label>Senha</label><input id="senha" type="password"></div>
+  <button class="btn green" style="width:100%" onclick="entrar()">Entrar</button><div id="loginMsg" class="msg err"></div>
+ </div>
+</div>
 
-<div id="loginTela" class="auth-wrapper">
-  <div class="auth-card">
-    <div class="auth-logo">
-      <h1>Escala do Plantão</h1>
-      <p>Painel de controle dos plantonistas</p>
-    </div>
-    <div class="campo"><label>E-mail</label><input id="email" type="email" placeholder="Digite seu e-mail"></div>
-    <div class="campo"><label>Senha</label><input id="senha" type="password" placeholder="Digite sua senha"></div>
-    <button class="btn btn-principal" style="width:100%" onclick="entrar()">Entrar</button>
-    <span class="esqueci" onclick="abrirRecuperacao()">Esqueci minha senha</span>
-    <div id="erroLogin" class="mensagem-erro"></div>
+<div id="app" class="hide">
+<header><div><h1>Painel de Plantonistas</h1><div class="muted" id="hojeTxt"></div></div><div class="actions"><button class="btn white" onclick="abrirCadastro()">+ Motorista</button><button class="btn green" onclick="abrirCobertura()">+ Nova Cobertura</button><button class="btn red" onclick="sair()">Sair</button></div></header>
+<main>
+ <div class="cards">
+  <div class="card" onclick="setSit('')"><span>Total</span><strong id="kTotal">0</strong></div>
+  <div class="card" onclick="setSit('Disponível')"><span>Disponíveis</span><strong id="kDisp">0</strong></div>
+  <div class="card" onclick="setSit('Em cobertura')"><span>Em cobertura</span><strong id="kCob">0</strong></div>
+  <div class="card" onclick="setSit('Indisponível')"><span>Indisponíveis</span><strong id="kInd">0</strong></div>
+ </div>
+ <div class="panel">
+  <div class="filters">
+   <div><label>Data</label><input id="fData" type="date" onchange="montarLista()"></div>
+   <div><label>Período</label><select id="fPeriodo" onchange="renderLista()"><option value="">Todos</option><option>Manhã</option><option>Tarde</option></select></div>
+   <div><label>Situação</label><select id="fSituacao" onchange="renderLista()"><option value="">Todos</option><option>Disponível</option><option>Em cobertura</option><option>Indisponível</option></select></div>
+   <div><label>Linha</label><select id="fLinha" onchange="renderLista()"><option value="">Todas</option></select></div>
+   <div><label>Buscar</label><input id="fBusca" placeholder="Nome ou matrícula..." oninput="renderLista()"></div>
   </div>
+  <div class="paneltop"><div><b>Escala diária</b><div class="muted">Clique no motorista para ver o mês completo</div></div><button class="btn green" onclick="setSit('Disponível')">🟢 Disponíveis</button></div>
+  <div class="tablewrap"><table><thead><tr><th>Matrícula</th><th>Motorista</th><th>Período</th><th>Horário</th><th>Situação</th><th>Linha</th><th>Motivo</th></tr></thead><tbody id="tbody"></tbody></table></div>
+ </div>
+</main>
 </div>
 
-<div id="recuperarTela" class="auth-wrapper oculto">
-  <div class="auth-card">
-    <div class="auth-logo"><h1>Recuperar senha</h1><p>Informe seu e-mail.</p></div>
-    <div class="campo"><label>E-mail</label><input id="emailRecuperacao" type="email"></div>
-    <button class="btn btn-principal" style="width:100%" onclick="enviarRecuperacao()">Enviar recuperação</button>
-    <button class="btn btn-secundario" style="width:100%;margin-top:8px" onclick="voltarLogin()">Voltar</button>
-    <div id="mensagemRecuperacao"></div>
-  </div>
-</div>
+<div id="modalCadastro" class="modal hide"><div class="modalbox"><div class="modaltop"><b>Cadastrar motorista</b><button class="btn gray" onclick="fechar('modalCadastro')">✕</button></div><div class="modalbody">
+<input id="mId" type="hidden"><div class="formgrid">
+<div class="field"><label>Matrícula *</label><input id="mMat"></div><div class="field"><label>Nome completo *</label><input id="mNome"></div>
+<div class="field"><label>Telefone</label><input id="mTel" placeholder="5511999999999"></div><div class="field"><label>Período *</label><select id="mPer" onchange="horaBase()"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option></select></div>
+<div class="field"><label>Horário base</label><input id="mHora" type="time" readonly></div></div>
+<div class="actions" style="margin-top:16px"><button class="btn green" onclick="salvarMotorista()">Salvar</button><button class="btn gray" onclick="fechar('modalCadastro')">Cancelar</button></div><div id="mMsg" class="msg"></div>
+</div></div></div>
 
-<div id="novaSenhaTela" class="auth-wrapper oculto">
-  <div class="auth-card">
-    <div class="auth-logo"><h1>Nova senha</h1><p>Crie uma nova senha.</p></div>
-    <div class="campo"><label>Nova senha</label><input id="novaSenha" type="password"></div>
-    <div class="campo"><label>Confirmar senha</label><input id="confirmarNovaSenha" type="password"></div>
-    <button class="btn btn-principal" style="width:100%" onclick="alterarSenha()">Alterar senha</button>
-    <div id="mensagemNovaSenha"></div>
-  </div>
-</div>
+<div id="modalCobertura" class="modal hide"><div class="modalbox"><div class="modaltop"><b>Nova cobertura</b><button class="btn gray" onclick="fechar('modalCobertura')">✕</button></div><div class="modalbody">
+<div class="formgrid">
+<div class="field"><label>Motorista *</label><select id="cMot"></select></div><div class="field"><label>Linha *</label><select id="cLin"></select></div>
+<div class="field"><label>Motivo *</label><select id="cMotivo"></select></div><div class="field"><label>Período *</label><select id="cPer"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option></select></div>
+<div class="field"><label>Horário da linha</label><input id="cHora" type="time"></div><div class="field"><label>Início *</label><input id="cIni" type="date"></div>
+<div class="field"><label>Fim *</label><input id="cFim" type="date"></div><div class="field"><label>Observação</label><textarea id="cObs"></textarea></div></div>
+<div class="actions" style="margin-top:16px"><button class="btn green" onclick="salvarCobertura()">Salvar cobertura</button><button class="btn gray" onclick="fechar('modalCobertura')">Cancelar</button></div><div id="cMsg" class="msg"></div>
+</div></div></div>
 
-<div id="appTela" class="oculto">
-<header class="topbar">
-  <div class="titulo-app"><h1>Painel de Plantonistas</h1><p id="dataHoje"></p></div>
-  <button class="btn btn-vermelho" onclick="sair()">Sair</button>
-</header>
-
-<nav class="menu">
-  <button id="menuPainel" class="ativo" onclick="abrirAba('painel')">📊 Painel</button>
-  <button id="menuDiaria" onclick="abrirAba('diaria')">📅 Escala Diária</button>
-  <button id="menuMensal" onclick="abrirAba('mensal')">🗓️ Visão Mensal</button>
-  <button id="menuCoberturas" onclick="abrirAba('coberturas')">🔄 Coberturas</button>
-  <button id="menuNecessidades" onclick="abrirAba('necessidades')">⚠️ Necessidades</button>
-  <button id="menuMotoristas" onclick="abrirAba('motoristas')">👥 Motoristas</button>
-  <button id="menuLinhas" onclick="abrirAba('linhas')">🚌 Linhas</button>
-</nav>
-
-<div id="abaPainel" class="conteudo">
-  <section class="cards">
-    <div class="card" onclick="irParaDiariaFiltro('todos')"><span>Total</span><strong id="painelTotal">0</strong><small>plantonistas ativos</small></div>
-    <div class="card" onclick="irParaDiariaFiltro('disponivel')"><span>Disponíveis</span><strong id="painelDisponiveis">0</strong><small>livres hoje</small></div>
-    <div class="card" onclick="irParaDiariaFiltro('cobertura')"><span>Em cobertura</span><strong id="painelCobertura">0</strong><small>ocupados hoje</small></div>
-    <div class="card"><span>Indisponíveis</span><strong id="painelIndisponiveis">0</strong><small>folga/afastamento</small></div>
-    <div class="card"><span>Sem cobertura</span><strong id="painelPendencias">0</strong><small>necessidades abertas</small></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Próximos movimentos</h2><p>Inícios, términos e pendências</p></div></div>
-    <div id="listaAlertas" class="lista-alertas"></div>
-  </section>
-</div>
-
-<div id="abaDiaria" class="conteudo oculto">
-  <section class="filtros">
-    <div class="campo"><label>Data</label><input id="filtroData" type="date" onchange="carregarEscalaDiaria()"></div>
-    <div class="campo"><label>Período</label><select id="filtroPeriodo" onchange="filtrarDiaria()"><option value="">Todos</option><option>Manhã</option><option>Tarde</option></select></div>
-    <div class="campo"><label>Situação</label><select id="filtroSituacao" onchange="filtrarDiaria()"><option value="">Todos</option><option value="Disponível">Disponíveis</option><option value="Em cobertura">Em cobertura</option><option value="Indisponível">Indisponíveis</option></select></div>
-    <div class="campo"><label>Linha</label><select id="filtroLinha" onchange="filtrarDiaria()"><option value="">Todas</option></select></div>
-    <div class="campo"><label>Pesquisar</label><input id="pesquisaDiaria" placeholder="Matrícula ou nome..." oninput="filtrarDiaria()"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho">
-      <div><h2>Escala Diária</h2><p>Clique no nome do motorista para abrir o calendário mensal</p></div>
-      <button class="btn btn-principal" onclick="mostrarSomenteDisponiveis()">🟢 Mostrar disponíveis</button>
-    </div>
-    <div class="tabela-wrapper">
-      <table>
-        <thead><tr><th>Matrícula</th><th>Motorista</th><th>Período</th><th>Horário Base</th><th>Situação</th><th>Linha</th><th>Horário Linha</th><th>Motivo</th></tr></thead>
-        <tbody id="tabelaDiaria"></tbody>
-      </table>
-    </div>
-  </section>
-</div>
-
-<div id="abaMensal" class="conteudo oculto">
-  <section class="filtros" style="grid-template-columns:180px 180px 1fr">
-    <div class="campo"><label>Mês</label><input id="mesMensal" type="month" onchange="carregarVisaoMensal()"></div>
-    <div class="campo"><label>Período</label><select id="periodoMensal" onchange="carregarVisaoMensal()"><option value="">Todos</option><option>Manhã</option><option>Tarde</option></select></div>
-    <div class="campo"><label>Pesquisar</label><input id="pesquisaMensal" placeholder="Nome ou matrícula..." oninput="renderVisaoMensal()"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Visão Mensal</h2><p>Visão geral de todos os plantonistas por dia</p></div></div>
-    <div id="visaoMensalContainer" class="visao-mensal"></div>
-  </section>
-</div>
-
-<div id="abaCoberturas" class="conteudo oculto">
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Nova Cobertura</h2><p>Um lançamento pode cobrir vários dias</p></div></div>
-    <input type="hidden" id="coberturaId">
-    <div class="grid-form">
-      <div class="campo"><label>Motorista *</label><select id="cobMotorista"></select></div>
-      <div class="campo"><label>Linha *</label><select id="cobLinha"></select></div>
-      <div class="campo"><label>Motivo *</label><select id="cobMotivo"></select></div>
-      <div class="campo"><label>Período *</label><select id="cobPeriodo"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option></select></div>
-      <div class="campo"><label>Horário da linha</label><input id="cobHorario" type="time"></div>
-      <div class="campo"><label>Data início *</label><input id="cobInicio" type="date"></div>
-      <div class="campo"><label>Data fim *</label><input id="cobFim" type="date"></div>
-      <div class="campo"><label>Necessidade vinculada</label><select id="cobNecessidade"><option value="">Sem vínculo</option></select></div>
-      <div class="campo"><label>Observação</label><textarea id="cobObservacao"></textarea></div>
-    </div>
-    <div class="acoes-formulario">
-      <button class="btn btn-principal" onclick="salvarCobertura()">Salvar cobertura</button>
-      <button class="btn btn-cinza" onclick="limparCobertura()">Limpar</button>
-    </div>
-    <div id="msgCobertura" style="padding:0 20px 18px"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Coberturas</h2><p>Atuais, futuras e encerradas</p></div></div>
-    <div class="tabela-wrapper"><table><thead><tr><th>Motorista</th><th>Linha</th><th>Motivo</th><th>Período</th><th>Início</th><th>Fim</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaCoberturas"></tbody></table></div>
-  </section>
-</div>
-
-<div id="abaNecessidades" class="conteudo oculto">
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Nova Necessidade</h2><p>Cadastre o que precisa ser coberto</p></div></div>
-    <input type="hidden" id="necessidadeId">
-    <div class="grid-form">
-      <div class="campo"><label>Linha *</label><select id="necLinha"></select></div>
-      <div class="campo"><label>Motivo *</label><select id="necMotivo"></select></div>
-      <div class="campo"><label>Período *</label><select id="necPeriodo"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option></select></div>
-      <div class="campo"><label>Horário da linha</label><input id="necHorario" type="time"></div>
-      <div class="campo"><label>Data início *</label><input id="necInicio" type="date"></div>
-      <div class="campo"><label>Data fim *</label><input id="necFim" type="date"></div>
-      <div class="campo"><label>Observação</label><textarea id="necObservacao"></textarea></div>
-    </div>
-    <div class="acoes-formulario">
-      <button class="btn btn-principal" onclick="salvarNecessidade()">Salvar necessidade</button>
-      <button class="btn btn-cinza" onclick="limparNecessidade()">Limpar</button>
-    </div>
-    <div id="msgNecessidade" style="padding:0 20px 18px"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Necessidades</h2><p>Abertas, parciais e cobertas</p></div></div>
-    <div class="tabela-wrapper"><table><thead><tr><th>Linha</th><th>Motivo</th><th>Período</th><th>Início</th><th>Fim</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaNecessidades"></tbody></table></div>
-  </section>
-</div>
-
-<div id="abaMotoristas" class="conteudo oculto">
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Cadastrar Motorista</h2><p>Cadastro único do plantonista</p></div></div>
-    <input type="hidden" id="motoristaId">
-    <div class="grid-form">
-      <div class="campo"><label>Matrícula *</label><input id="cadMatricula"></div>
-      <div class="campo"><label>Nome completo *</label><input id="cadNome"></div>
-      <div class="campo"><label>Telefone</label><input id="cadTelefone" placeholder="5511999999999"></div>
-      <div class="campo"><label>Período *</label><select id="cadPeriodo" onchange="ajustarHorarioBase()"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option></select></div>
-      <div class="campo"><label>Horário base</label><input id="cadHorario" type="time" readonly></div>
-    </div>
-    <div class="acoes-formulario">
-      <button class="btn btn-principal" onclick="salvarMotorista()">Salvar motorista</button>
-      <button class="btn btn-cinza" onclick="limparMotorista()">Limpar</button>
-    </div>
-    <div id="msgMotorista" style="padding:0 20px 18px"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Motoristas Cadastrados</h2><p>Clique no nome para abrir o calendário individual</p></div></div>
-    <div style="padding:15px 20px"><div class="campo" style="margin:0"><input id="pesquisaMotorista" placeholder="Pesquisar matrícula ou nome..." oninput="filtrarMotoristas()"></div></div>
-    <div class="tabela-wrapper"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Telefone</th><th>Período</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaMotoristas"></tbody></table></div>
-  </section>
-</div>
-
-<div id="abaLinhas" class="conteudo oculto">
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Cadastrar Linha</h2><p>Linhas usadas nas coberturas e necessidades</p></div></div>
-    <input type="hidden" id="linhaId">
-    <div class="grid-form">
-      <div class="campo"><label>Código *</label><input id="linhaCodigo" placeholder="Ex.: 3738/10"></div>
-      <div class="campo"><label>Descrição</label><input id="linhaDescricao"></div>
-      <div class="campo"><label>Período</label><select id="linhaPeriodo"><option value="">Não definido</option><option>Manhã</option><option>Tarde</option></select></div>
-      <div class="campo"><label>Horário padrão</label><input id="linhaHorario" type="time"></div>
-    </div>
-    <div class="acoes-formulario"><button class="btn btn-principal" onclick="salvarLinha()">Salvar linha</button><button class="btn btn-cinza" onclick="limparLinha()">Limpar</button></div>
-    <div id="msgLinha" style="padding:0 20px 18px"></div>
-  </section>
-  <section class="painel">
-    <div class="painel-cabecalho"><div><h2>Linhas Cadastradas</h2></div></div>
-    <div class="tabela-wrapper"><table><thead><tr><th>Código</th><th>Descrição</th><th>Período</th><th>Horário</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tabelaLinhas"></tbody></table></div>
-  </section>
-</div>
-
-</div>
-
-<div id="modalMotorista" class="modal oculto">
-  <div class="modal-card">
-    <div class="modal-topo">
-      <div><h2 id="modalTitulo"></h2><p id="modalSubtitulo" style="color:#667085;margin-top:4px"></p></div>
-      <button class="btn btn-cinza" onclick="fecharModalMotorista()">✕</button>
-    </div>
-    <div class="modal-conteudo">
-      <div class="calendario-cab">
-        <button class="btn btn-secundario" onclick="mudarMesMotorista(-1)">◀</button>
-        <strong id="tituloMesMotorista"></strong>
-        <button class="btn btn-secundario" onclick="mudarMesMotorista(1)">▶</button>
-      </div>
-      <div id="calendarioMotorista"></div>
-      <div class="acoes-formulario" style="padding:18px 0 0">
-        <button class="btn btn-azul" onclick="baixarPDFMotorista()">📄 Baixar PDF</button>
-        <button class="btn btn-secundario" onclick="imprimirMotorista()">🖨️ Imprimir</button>
-        <button class="btn btn-principal" onclick="compartilharWhatsApp()">💬 WhatsApp</button>
-      </div>
-      <div class="resumo-motorista">
-        <h3 style="margin-bottom:10px">Resumo do mês</h3>
-        <div id="resumoMotorista"></div>
-      </div>
-    </div>
-  </div>
-</div>
+<div id="modalMotorista" class="modal hide"><div class="modalbox"><div class="modaltop"><div><b id="calNome"></b><div class="muted" id="calSub"></div></div><button class="btn gray" onclick="fechar('modalMotorista')">✕</button></div><div class="modalbody">
+<div class="actions" style="justify-content:space-between;margin-bottom:14px"><button class="btn white" onclick="mudarMes(-1)">◀</button><b id="calMes"></b><button class="btn white" onclick="mudarMes(1)">▶</button></div>
+<div id="cal"></div><h3>Resumo do mês</h3><div id="resumo" class="summary"></div>
+<div class="actions" style="margin-top:18px"><button class="btn blue" onclick="pdf()">📄 PDF</button><button class="btn white" onclick="imprimir()">🖨️ Imprimir</button><button class="btn green" onclick="whatsapp()">💬 WhatsApp</button></div>
+</div></div></div>
 
 <script>
-const SUPABASE_URL = "https://chmkhlfmbvnppygjhxsx.supabase.co";
-const SUPABASE_KEY = "sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
-const supabaseClient = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const URL_SISTEMA = "https://plantaaoadm.github.io/painel-plantonistas/";
-
-let plantonistas=[], linhas=[], motivos=[], coberturas=[], necessidades=[], indisponibilidades=[];
-let diariaBase=[], mensalBase=[];
-let motoristaModal=null;
-let mesModal=new Date();
-
-function hojeISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
-function fmtData(v){if(!v)return "-";const [a,m,d]=v.split("-");return `${d}/${m}/${a}`}
-function fmtHora(v){return v?v.substring(0,5):"-"}
-function primeiroDiaMes(ym){return ym+"-01"}
-function ultimoDiaMes(ym){const [a,m]=ym.split("-").map(Number);return `${a}-${String(m).padStart(2,'0')}-${String(new Date(a,m,0).getDate()).padStart(2,'0')}`}
-function overlap(a1,a2,b1,b2){return a1<=b2 && b1<=a2}
-function diasNoMes(ano,mes){return new Date(ano,mes,0).getDate()}
-function nomeMes(ano,mes){return new Date(ano,mes-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}
-
-function esconderAuth(){["loginTela","recuperarTela","novaSenhaTela"].forEach(id=>document.getElementById(id).classList.add("oculto"))}
-function voltarLogin(){document.getElementById("appTela").classList.add("oculto");esconderAuth();document.getElementById("loginTela").classList.remove("oculto")}
-function abrirRecuperacao(){esconderAuth();document.getElementById("emailRecuperacao").value=document.getElementById("email").value.trim();document.getElementById("recuperarTela").classList.remove("oculto")}
-
-async function entrar(){
- const email=document.getElementById("email").value.trim(), senha=document.getElementById("senha").value, box=document.getElementById("erroLogin"); box.innerText="";
- const {error}=await supabaseClient.auth.signInWithPassword({email,password:senha});
- if(error){box.innerText="Erro Supabase: "+error.message;return}
- await mostrarSistema();
+const SUPABASE_URL="https://chmkhlfmbvnppygjhxsx.supabase.co";
+const SUPABASE_KEY="sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let P=[],L=[],M=[],C=[],I=[],lista=[],atual=null,mesAtual=new Date();
+const isoHoje=()=>{let d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const dataBR=s=>s?s.split("-").reverse().join("/"):"-"; const hora=s=>s?s.slice(0,5):"-";
+const linha=id=>L.find(x=>x.id==id)?.codigo||"-"; const motivo=id=>M.find(x=>x.id==id)?.nome||"-";
+function fechar(id){document.getElementById(id).classList.add("hide")}
+async function entrar(){let {error}=await sb.auth.signInWithPassword({email:email.value.trim(),password:senha.value});if(error){loginMsg.innerText=error.message;return}iniciar()}
+async function sair(){await sb.auth.signOut();location.reload()}
+async function iniciar(){login.classList.add("hide");app.classList.remove("hide");hojeTxt.innerText=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});fData.value=isoHoje();await carregar()}
+async function carregar(){
+ let [p,l,m,c,i]=await Promise.all([sb.from("plantonistas").select("*").order("nome"),sb.from("linhas").select("*").order("codigo"),sb.from("motivos").select("*").eq("ativo",true).order("nome"),sb.from("coberturas").select("*").neq("status","CANCELADA"),sb.from("indisponibilidades").select("*").eq("ativa",true)]);
+ if([p,l,m,c,i].some(x=>x.error)){alert("Erro ao carregar o banco.");return}P=p.data||[];L=l.data||[];M=m.data||[];C=c.data||[];I=i.data||[];
+ fLinha.innerHTML='<option value="">Todas</option>'+L.filter(x=>x.ativa).map(x=>`<option value="${x.id}">${x.codigo}</option>`).join("");
+ cLin.innerHTML='<option value="">Selecione</option>'+L.filter(x=>x.ativa).map(x=>`<option value="${x.id}">${x.codigo}</option>`).join("");
+ cMotivo.innerHTML='<option value="">Selecione</option>'+M.map(x=>`<option value="${x.id}">${x.nome}</option>`).join("");
+ cMot.innerHTML='<option value="">Selecione</option>'+P.filter(x=>x.ativo).map(x=>`<option value="${x.id}">${x.matricula} - ${x.nome}</option>`).join("");
+ montarLista()
 }
-async function sair(){await supabaseClient.auth.signOut();voltarLogin()}
-async function enviarRecuperacao(){
- const email=document.getElementById("emailRecuperacao").value.trim(), box=document.getElementById("mensagemRecuperacao");
- const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:URL_SISTEMA});
- box.className=error?"mensagem-erro":"mensagem-sucesso";box.innerText=error?error.message:"E-mail de recuperação enviado.";
-}
-async function alterarSenha(){
- const s=document.getElementById("novaSenha").value,c=document.getElementById("confirmarNovaSenha").value,b=document.getElementById("mensagemNovaSenha");
- if(s.length<6){b.className="mensagem-erro";b.innerText="Senha com pelo menos 6 caracteres.";return}
- if(s!==c){b.className="mensagem-erro";b.innerText="As senhas são diferentes.";return}
- const {error}=await supabaseClient.auth.updateUser({password:s});
- b.className=error?"mensagem-erro":"mensagem-sucesso";b.innerText=error?error.message:"Senha alterada com sucesso.";
-}
-
-async function mostrarSistema(){
- esconderAuth();document.getElementById("appTela").classList.remove("oculto");
- document.getElementById("dataHoje").innerText=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
- document.getElementById("filtroData").value=hojeISO();
- document.getElementById("mesMensal").value=hojeISO().slice(0,7);
- await carregarBases();
- await abrirAba("painel");
-}
-
-async function carregarBases(){
- const [p,l,m,c,n,i]=await Promise.all([
-   supabaseClient.from("plantonistas").select("*").order("nome"),
-   supabaseClient.from("linhas").select("*").order("codigo"),
-   supabaseClient.from("motivos").select("*").eq("ativo",true).order("nome"),
-   supabaseClient.from("coberturas").select("*").neq("status","CANCELADA").order("data_inicio"),
-   supabaseClient.from("necessidades").select("*").eq("ativa",true).order("data_inicio"),
-   supabaseClient.from("indisponibilidades").select("*").eq("ativa",true).order("data_inicio")
- ]);
- if([p,l,m,c,n,i].some(x=>x.error)){console.error(p.error||l.error||m.error||c.error||n.error||i.error);alert("Erro ao carregar dados do banco.");return}
- plantonistas=p.data||[];linhas=l.data||[];motivos=m.data||[];coberturas=c.data||[];necessidades=n.data||[];indisponibilidades=i.data||[];
- preencherCombos();renderMotoristas();renderLinhas();renderCoberturas();renderNecessidades();
-}
-
-function preencherCombos(){
- const optsMot=motivos.map(x=>`<option value="${x.id}">${x.nome}</option>`).join("");
- ["cobMotivo","necMotivo"].forEach(id=>document.getElementById(id).innerHTML='<option value="">Selecione</option>'+optsMot);
- const optsLin=linhas.filter(x=>x.ativa).map(x=>`<option value="${x.id}">${x.codigo}</option>`).join("");
- ["cobLinha","necLinha"].forEach(id=>document.getElementById(id).innerHTML='<option value="">Selecione</option>'+optsLin);
- document.getElementById("filtroLinha").innerHTML='<option value="">Todas</option>'+linhas.filter(x=>x.ativa).map(x=>`<option value="${x.id}">${x.codigo}</option>`).join("");
- document.getElementById("cobMotorista").innerHTML='<option value="">Selecione</option>'+plantonistas.filter(x=>x.ativo).map(x=>`<option value="${x.id}">${x.matricula} - ${x.nome}</option>`).join("");
- document.getElementById("cobNecessidade").innerHTML='<option value="">Sem vínculo</option>'+necessidades.filter(x=>["ABERTA","PARCIAL"].includes(x.status)).map(x=>`<option value="${x.id}">${linhaNome(x.linha_id)} | ${fmtData(x.data_inicio)} a ${fmtData(x.data_fim)}</option>`).join("");
-}
-function linhaNome(id){return linhas.find(x=>x.id==id)?.codigo||"-"}
-function motivoNome(id){return motivos.find(x=>x.id==id)?.nome||"-"}
-
-async function abrirAba(aba){
- ["painel","diaria","mensal","coberturas","necessidades","motoristas","linhas"].forEach(a=>{
-  document.getElementById("aba"+a.charAt(0).toUpperCase()+a.slice(1)).classList.add("oculto");
-  document.getElementById("menu"+a.charAt(0).toUpperCase()+a.slice(1)).classList.remove("ativo");
- });
- document.getElementById("aba"+aba.charAt(0).toUpperCase()+aba.slice(1)).classList.remove("oculto");
- document.getElementById("menu"+aba.charAt(0).toUpperCase()+aba.slice(1)).classList.add("ativo");
- if(aba==="painel")await carregarPainel();
- if(aba==="diaria")await carregarEscalaDiaria();
- if(aba==="mensal")await carregarVisaoMensal();
- if(aba==="coberturas")renderCoberturas();
- if(aba==="necessidades")renderNecessidades();
- if(aba==="motoristas")renderMotoristas();
- if(aba==="linhas")renderLinhas();
-}
-
-function situacaoNoDia(p,data){
- const ind=indisponibilidades.find(x=>x.plantonista_id===p.id && x.data_inicio<=data && x.data_fim>=data);
- if(ind)return {situacao:"Indisponível",tipo:ind.tipo,linha:"-",horario:"-",motivo:ind.tipo};
- const cob=coberturas.find(x=>x.plantonista_id===p.id && x.status==="ATIVA" && x.data_inicio<=data && x.data_fim>=data);
- if(cob)return {situacao:"Em cobertura",tipo:"cobertura",linha:linhaNome(cob.linha_id),horario:fmtHora(cob.horario_linha),motivo:motivoNome(cob.motivo_id),cobertura:cob};
- return {situacao:"Disponível",tipo:"disponivel",linha:"-",horario:"-",motivo:"-"};
-}
-
-async function carregarPainel(){
- const data=hojeISO();const ativos=plantonistas.filter(x=>x.ativo);
- let d=0,c=0,i=0;ativos.forEach(p=>{const s=situacaoNoDia(p,data);if(s.situacao==="Disponível")d++;else if(s.situacao==="Em cobertura")c++;else i++});
- const pend=necessidades.filter(n=>n.ativa && ["ABERTA","PARCIAL"].includes(n.status) && n.data_fim>=data).length;
- document.getElementById("painelTotal").innerText=ativos.length;document.getElementById("painelDisponiveis").innerText=d;document.getElementById("painelCobertura").innerText=c;document.getElementById("painelIndisponiveis").innerText=i;document.getElementById("painelPendencias").innerText=pend;
- const amanha=new Date();amanha.setDate(amanha.getDate()+1);const am=amanha.toISOString().slice(0,10);
- let alerts=[];
- coberturas.filter(x=>x.status==="ATIVA"&&x.data_fim===data).forEach(x=>alerts.push(`🔵 ${plantonistas.find(p=>p.id===x.plantonista_id)?.nome||""} termina hoje na linha ${linhaNome(x.linha_id)}.`));
- coberturas.filter(x=>x.status==="ATIVA"&&x.data_inicio===am).forEach(x=>alerts.push(`➡️ ${plantonistas.find(p=>p.id===x.plantonista_id)?.nome||""} inicia amanhã na linha ${linhaNome(x.linha_id)}.`));
- necessidades.filter(x=>["ABERTA","PARCIAL"].includes(x.status)&&x.data_inicio<=am&&x.data_fim>=data).slice(0,10).forEach(x=>alerts.push(`⚠️ ${linhaNome(x.linha_id)} - ${motivoNome(x.motivo_id)} ainda está ${x.status.toLowerCase()}.`));
- document.getElementById("listaAlertas").innerHTML=alerts.length?alerts.map(a=>`<div class="alerta-item">${a}</div>`).join(""):'<div class="alerta-item">Nenhuma pendência importante no momento.</div>';
-}
-function irParaDiariaFiltro(v){abrirAba("diaria").then(()=>{document.getElementById("filtroSituacao").value=v==="disponivel"?"Disponível":v==="cobertura"?"Em cobertura":"";filtrarDiaria()})}
-
-async function carregarEscalaDiaria(){
- const data=document.getElementById("filtroData").value||hojeISO();
- diariaBase=plantonistas.filter(p=>p.ativo).map(p=>{const s=situacaoNoDia(p,data);return {...p,...s}});
- filtrarDiaria();
-}
-function mostrarSomenteDisponiveis(){document.getElementById("filtroSituacao").value="Disponível";filtrarDiaria()}
-function filtrarDiaria(){
- const per=document.getElementById("filtroPeriodo").value,sit=document.getElementById("filtroSituacao").value,lin=document.getElementById("filtroLinha").value,q=document.getElementById("pesquisaDiaria").value.toLowerCase();
- let dados=diariaBase.filter(x=>(!per||x.periodo===per)&&(!sit||x.situacao===sit)&&(!lin||String(x.cobertura?.linha_id||"")===lin)&&(!q||x.nome.toLowerCase().includes(q)||String(x.matricula).includes(q)));
- const tb=document.getElementById("tabelaDiaria");if(!dados.length){tb.innerHTML='<tr><td colspan="8" class="sem-dados">Nenhum plantonista encontrado.</td></tr>';return}
- tb.innerHTML=dados.map(x=>`<tr><td>${x.matricula}</td><td><span class="nome-click" onclick="abrirMotorista(${x.id})">${x.nome}</span></td><td>${x.periodo}</td><td>${fmtHora(x.horario_base)}</td><td><span class="badge ${x.situacao==="Disponível"?"badge-disponivel":x.situacao==="Em cobertura"?"badge-cobertura":"badge-indisponivel"}">${x.situacao}</span></td><td>${x.linha}</td><td>${x.horario}</td><td>${x.motivo}</td></tr>`).join("");
-}
-
-async function carregarVisaoMensal(){
- const ym=document.getElementById("mesMensal").value||hojeISO().slice(0,7);document.getElementById("mesMensal").value=ym;
- const [ano,mes]=ym.split("-").map(Number), total=diasNoMes(ano,mes), per=document.getElementById("periodoMensal").value;
- mensalBase=plantonistas.filter(p=>p.ativo&&(!per||p.periodo===per)).map(p=>({p,dias:Array.from({length:total},(_,k)=>{const data=`${ano}-${String(mes).padStart(2,'0')}-${String(k+1).padStart(2,'0')}`;return situacaoNoDia(p,data)})}));
- renderVisaoMensal();
-}
-function renderVisaoMensal(){
- const ym=document.getElementById("mesMensal").value||hojeISO().slice(0,7),[ano,mes]=ym.split("-").map(Number),total=diasNoMes(ano,mes),q=document.getElementById("pesquisaMensal").value.toLowerCase();
- const dados=mensalBase.filter(x=>!q||x.p.nome.toLowerCase().includes(q)||String(x.p.matricula).includes(q));
- let html='<table class="matriz"><thead><tr><th>Motorista</th>'+Array.from({length:total},(_,i)=>`<th>${i+1}</th>`).join("")+'</tr></thead><tbody>';
- dados.forEach(x=>{html+=`<tr><td><span class="nome-click" onclick="abrirMotorista(${x.p.id})">${x.p.matricula} - ${x.p.nome}</span></td>`;x.dias.forEach(s=>{const cls=s.situacao==="Disponível"?"dia-disponivel":s.situacao==="Em cobertura"?"dia-cobertura":"dia-indisponivel";html+=`<td><div class="celula-dia ${cls}" title="${s.situacao} ${s.linha} ${s.motivo}">${s.situacao==="Disponível"?"D":s.situacao==="Em cobertura"?s.linha:"I"}</div></td>`});html+="</tr>"});
- html+="</tbody></table>";document.getElementById("visaoMensalContainer").innerHTML=html;
-}
-
-function ajustarHorarioBase(){const p=document.getElementById("cadPeriodo").value;document.getElementById("cadHorario").value=p==="Manhã"?"05:00":p==="Tarde"?"15:00":""}
-async function salvarMotorista(){
- const id=document.getElementById("motoristaId").value,matricula=document.getElementById("cadMatricula").value.trim(),nome=document.getElementById("cadNome").value.trim().toUpperCase(),telefone=document.getElementById("cadTelefone").value.trim(),periodo=document.getElementById("cadPeriodo").value,horario=document.getElementById("cadHorario").value,box=document.getElementById("msgMotorista");
- if(!matricula||!nome||!periodo){box.className="mensagem-erro";box.innerText="Preencha matrícula, nome e período.";return}
- const reg={matricula,nome,telefone:telefone||null,periodo,horario_base:horario||null,ativo:true,updated_at:new Date().toISOString()};
- const r=id?await supabaseClient.from("plantonistas").update(reg).eq("id",id):await supabaseClient.from("plantonistas").insert(reg);
- if(r.error){box.className="mensagem-erro";box.innerText="Erro: "+r.error.message;return}
- box.className="mensagem-sucesso";box.innerText=id?"Motorista atualizado.":"Motorista cadastrado.";limparMotorista();await carregarBases();
-}
-function limparMotorista(){["motoristaId","cadMatricula","cadNome","cadTelefone","cadPeriodo","cadHorario"].forEach(id=>document.getElementById(id).value="")}
-function renderMotoristas(){filtrarMotoristas()}
-function filtrarMotoristas(){
- const q=document.getElementById("pesquisaMotorista")?.value.toLowerCase()||"",dados=plantonistas.filter(x=>!q||x.nome.toLowerCase().includes(q)||String(x.matricula).includes(q));
- const tb=document.getElementById("tabelaMotoristas");if(!tb)return;tb.innerHTML=dados.length?dados.map(x=>`<tr><td>${x.matricula}</td><td><span class="nome-click" onclick="abrirMotorista(${x.id})">${x.nome}</span></td><td>${x.telefone?`<a class="whatsapp" target="_blank" href="https://wa.me/${x.telefone.replace(/\D/g,'')}">${x.telefone}</a>`:"-"}</td><td>${x.periodo}</td><td>${fmtHora(x.horario_base)}</td><td><span class="badge ${x.ativo?"badge-disponivel":"badge-cancelado"}">${x.ativo?"Ativo":"Inativo"}</span></td><td><div class="acoes-tabela"><button class="btn btn-secundario btn-pequeno" onclick="editarMotorista(${x.id})">Editar</button><button class="btn btn-amarelo btn-pequeno" onclick="inativarMotorista(${x.id})">${x.ativo?"Inativar":"Reativar"}</button></div></td></tr>`).join(""):'<tr><td colspan="7" class="sem-dados">Nenhum motorista cadastrado.</td></tr>';
-}
-function editarMotorista(id){const x=plantonistas.find(a=>a.id===id);if(!x)return;document.getElementById("motoristaId").value=x.id;document.getElementById("cadMatricula").value=x.matricula;document.getElementById("cadNome").value=x.nome;document.getElementById("cadTelefone").value=x.telefone||"";document.getElementById("cadPeriodo").value=x.periodo;document.getElementById("cadHorario").value=fmtHora(x.horario_base).replace("-","");window.scrollTo({top:0,behavior:"smooth"})}
-async function inativarMotorista(id){const x=plantonistas.find(a=>a.id===id);if(!x)return;await supabaseClient.from("plantonistas").update({ativo:!x.ativo,updated_at:new Date().toISOString()}).eq("id",id);await carregarBases()}
-
-async function salvarLinha(){
- const id=document.getElementById("linhaId").value,codigo=document.getElementById("linhaCodigo").value.trim().toUpperCase(),descricao=document.getElementById("linhaDescricao").value.trim(),periodo=document.getElementById("linhaPeriodo").value,horario=document.getElementById("linhaHorario").value,box=document.getElementById("msgLinha");
- if(!codigo){box.className="mensagem-erro";box.innerText="Informe o código da linha.";return}
- const reg={codigo,descricao:descricao||null,periodo:periodo||null,horario:horario||null,ativa:true,updated_at:new Date().toISOString()};
- const r=id?await supabaseClient.from("linhas").update(reg).eq("id",id):await supabaseClient.from("linhas").insert(reg);
- if(r.error){box.className="mensagem-erro";box.innerText="Erro: "+r.error.message;return}
- box.className="mensagem-sucesso";box.innerText="Linha salva.";limparLinha();await carregarBases();
-}
-function limparLinha(){["linhaId","linhaCodigo","linhaDescricao","linhaPeriodo","linhaHorario"].forEach(id=>document.getElementById(id).value="")}
-function renderLinhas(){const tb=document.getElementById("tabelaLinhas");if(!tb)return;tb.innerHTML=linhas.length?linhas.map(x=>`<tr><td>${x.codigo}</td><td>${x.descricao||"-"}</td><td>${x.periodo||"-"}</td><td>${fmtHora(x.horario)}</td><td><span class="badge ${x.ativa?"badge-disponivel":"badge-cancelado"}">${x.ativa?"Ativa":"Inativa"}</span></td><td><div class="acoes-tabela"><button class="btn btn-secundario btn-pequeno" onclick="editarLinha(${x.id})">Editar</button><button class="btn btn-amarelo btn-pequeno" onclick="toggleLinha(${x.id})">${x.ativa?"Inativar":"Reativar"}</button></div></td></tr>`).join(""):'<tr><td colspan="6" class="sem-dados">Nenhuma linha cadastrada.</td></tr>'}
-function editarLinha(id){const x=linhas.find(a=>a.id===id);document.getElementById("linhaId").value=x.id;document.getElementById("linhaCodigo").value=x.codigo;document.getElementById("linhaDescricao").value=x.descricao||"";document.getElementById("linhaPeriodo").value=x.periodo||"";document.getElementById("linhaHorario").value=fmtHora(x.horario).replace("-","")}
-async function toggleLinha(id){const x=linhas.find(a=>a.id===id);await supabaseClient.from("linhas").update({ativa:!x.ativa,updated_at:new Date().toISOString()}).eq("id",id);await carregarBases()}
-
-async function salvarNecessidade(){
- const id=document.getElementById("necessidadeId").value,linha_id=+document.getElementById("necLinha").value,motivo_id=+document.getElementById("necMotivo").value,periodo=document.getElementById("necPeriodo").value,horario_linha=document.getElementById("necHorario").value,data_inicio=document.getElementById("necInicio").value,data_fim=document.getElementById("necFim").value,observacao=document.getElementById("necObservacao").value.trim(),box=document.getElementById("msgNecessidade");
- if(!linha_id||!motivo_id||!periodo||!data_inicio||!data_fim){box.className="mensagem-erro";box.innerText="Preencha os campos obrigatórios.";return}
- if(data_fim<data_inicio){box.className="mensagem-erro";box.innerText="Data final não pode ser anterior à inicial.";return}
- const reg={linha_id,motivo_id,periodo,horario_linha:horario_linha||null,data_inicio,data_fim,observacao:observacao||null,status:"ABERTA",ativa:true,updated_at:new Date().toISOString()};
- const r=id?await supabaseClient.from("necessidades").update(reg).eq("id",id):await supabaseClient.from("necessidades").insert(reg);
- if(r.error){box.className="mensagem-erro";box.innerText="Erro: "+r.error.message;return}
- box.className="mensagem-sucesso";box.innerText="Necessidade salva.";limparNecessidade();await carregarBases();
-}
-function limparNecessidade(){["necessidadeId","necLinha","necMotivo","necPeriodo","necHorario","necInicio","necFim","necObservacao"].forEach(id=>document.getElementById(id).value="")}
-function renderNecessidades(){const tb=document.getElementById("tabelaNecessidades");if(!tb)return;tb.innerHTML=necessidades.length?necessidades.map(x=>`<tr><td>${linhaNome(x.linha_id)}</td><td>${motivoNome(x.motivo_id)}</td><td>${x.periodo}</td><td>${fmtData(x.data_inicio)}</td><td>${fmtData(x.data_fim)}</td><td><span class="badge ${x.status==="COBERTA"?"badge-disponivel":x.status==="CANCELADA"?"badge-cancelado":"badge-alerta"}">${x.status}</span></td><td><div class="acoes-tabela"><button class="btn btn-secundario btn-pequeno" onclick="editarNecessidade(${x.id})">Editar</button><button class="btn btn-vermelho btn-pequeno" onclick="cancelarNecessidade(${x.id})">Cancelar</button></div></td></tr>`).join(""):'<tr><td colspan="7" class="sem-dados">Nenhuma necessidade cadastrada.</td></tr>'}
-function editarNecessidade(id){const x=necessidades.find(a=>a.id===id);document.getElementById("necessidadeId").value=x.id;document.getElementById("necLinha").value=x.linha_id;document.getElementById("necMotivo").value=x.motivo_id;document.getElementById("necPeriodo").value=x.periodo;document.getElementById("necHorario").value=fmtHora(x.horario_linha).replace("-","");document.getElementById("necInicio").value=x.data_inicio;document.getElementById("necFim").value=x.data_fim;document.getElementById("necObservacao").value=x.observacao||""}
-async function cancelarNecessidade(id){await supabaseClient.from("necessidades").update({status:"CANCELADA",ativa:false,updated_at:new Date().toISOString()}).eq("id",id);await carregarBases()}
-
-async function salvarCobertura(){
- const id=document.getElementById("coberturaId").value,plantonista_id=+document.getElementById("cobMotorista").value,linha_id=+document.getElementById("cobLinha").value,motivo_id=+document.getElementById("cobMotivo").value,periodo=document.getElementById("cobPeriodo").value,horario_linha=document.getElementById("cobHorario").value,data_inicio=document.getElementById("cobInicio").value,data_fim=document.getElementById("cobFim").value,necessidade_id=document.getElementById("cobNecessidade").value?+document.getElementById("cobNecessidade").value:null,observacao=document.getElementById("cobObservacao").value.trim(),box=document.getElementById("msgCobertura");
- if(!plantonista_id||!linha_id||!motivo_id||!periodo||!data_inicio||!data_fim){box.className="mensagem-erro";box.innerText="Preencha os campos obrigatórios.";return}
- if(data_fim<data_inicio){box.className="mensagem-erro";box.innerText="Data final não pode ser anterior à inicial.";return}
- const conflitoCob=coberturas.find(x=>String(x.id)!==String(id)&&x.plantonista_id===plantonista_id&&x.status==="ATIVA"&&overlap(data_inicio,data_fim,x.data_inicio,x.data_fim));
- const conflitoInd=indisponibilidades.find(x=>x.plantonista_id===plantonista_id&&overlap(data_inicio,data_fim,x.data_inicio,x.data_fim));
- if(conflitoCob){box.className="mensagem-erro";box.innerText=`Conflito: motorista já está em cobertura de ${fmtData(conflitoCob.data_inicio)} até ${fmtData(conflitoCob.data_fim)}.`;return}
- if(conflitoInd){box.className="mensagem-erro";box.innerText=`Conflito: motorista está indisponível de ${fmtData(conflitoInd.data_inicio)} até ${fmtData(conflitoInd.data_fim)}.`;return}
- const reg={necessidade_id,plantonista_id,linha_id,motivo_id,periodo,horario_linha:horario_linha||null,data_inicio,data_fim,observacao:observacao||null,status:"ATIVA",updated_at:new Date().toISOString()};
- const r=id?await supabaseClient.from("coberturas").update(reg).eq("id",id):await supabaseClient.from("coberturas").insert(reg);
- if(r.error){box.className="mensagem-erro";box.innerText="Erro: "+r.error.message;return}
- if(necessidade_id)await atualizarStatusNecessidade(necessidade_id);
- box.className="mensagem-sucesso";box.innerText="Cobertura salva.";limparCobertura();await carregarBases();
-}
-function limparCobertura(){["coberturaId","cobMotorista","cobLinha","cobMotivo","cobPeriodo","cobHorario","cobInicio","cobFim","cobNecessidade","cobObservacao"].forEach(id=>document.getElementById(id).value="")}
-function renderCoberturas(){const tb=document.getElementById("tabelaCoberturas");if(!tb)return;tb.innerHTML=coberturas.length?coberturas.map(x=>`<tr><td><span class="nome-click" onclick="abrirMotorista(${x.plantonista_id})">${plantonistas.find(p=>p.id===x.plantonista_id)?.nome||"-"}</span></td><td>${linhaNome(x.linha_id)}</td><td>${motivoNome(x.motivo_id)}</td><td>${x.periodo}</td><td>${fmtData(x.data_inicio)}</td><td>${fmtData(x.data_fim)}</td><td><span class="badge ${x.status==="ATIVA"?"badge-cobertura":"badge-cancelado"}">${x.status}</span></td><td><div class="acoes-tabela"><button class="btn btn-secundario btn-pequeno" onclick="editarCobertura(${x.id})">Editar</button><button class="btn btn-amarelo btn-pequeno" onclick="encerrarCobertura(${x.id})">Encerrar</button><button class="btn btn-vermelho btn-pequeno" onclick="cancelarCobertura(${x.id})">Cancelar</button></div></td></tr>`).join(""):'<tr><td colspan="8" class="sem-dados">Nenhuma cobertura cadastrada.</td></tr>'}
-function editarCobertura(id){const x=coberturas.find(a=>a.id===id);document.getElementById("coberturaId").value=x.id;document.getElementById("cobMotorista").value=x.plantonista_id;document.getElementById("cobLinha").value=x.linha_id;document.getElementById("cobMotivo").value=x.motivo_id;document.getElementById("cobPeriodo").value=x.periodo;document.getElementById("cobHorario").value=fmtHora(x.horario_linha).replace("-","");document.getElementById("cobInicio").value=x.data_inicio;document.getElementById("cobFim").value=x.data_fim;document.getElementById("cobNecessidade").value=x.necessidade_id||"";document.getElementById("cobObservacao").value=x.observacao||"";window.scrollTo({top:0,behavior:"smooth"})}
-async function encerrarCobertura(id){await supabaseClient.from("coberturas").update({status:"ENCERRADA",data_fim:hojeISO(),updated_at:new Date().toISOString()}).eq("id",id);await carregarBases()}
-async function cancelarCobertura(id){const x=coberturas.find(a=>a.id===id);await supabaseClient.from("coberturas").update({status:"CANCELADA",updated_at:new Date().toISOString()}).eq("id",id);if(x?.necessidade_id)await atualizarStatusNecessidade(x.necessidade_id);await carregarBases()}
-async function atualizarStatusNecessidade(id){
- const n=necessidades.find(x=>x.id===id);if(!n)return;
- const cs=(await supabaseClient.from("coberturas").select("*").eq("necessidade_id",id).eq("status","ATIVA")).data||[];
- let status="ABERTA";
- if(cs.length){
-   const diasTot=Math.round((new Date(n.data_fim)-new Date(n.data_inicio))/86400000)+1;
-   const cobertos=new Set();cs.forEach(c=>{let d=new Date(c.data_inicio+"T00:00:00");const fim=new Date(c.data_fim+"T00:00:00");while(d<=fim){const iso=d.toISOString().slice(0,10);if(iso>=n.data_inicio&&iso<=n.data_fim)cobertos.add(iso);d.setDate(d.getDate()+1)}});
-   status=cobertos.size>=diasTot?"COBERTA":"PARCIAL";
- }
- await supabaseClient.from("necessidades").update({status,updated_at:new Date().toISOString()}).eq("id",id);
-}
-
-async function abrirMotorista(id){
- motoristaModal=plantonistas.find(x=>x.id===id);if(!motoristaModal)return;
- const ym=document.getElementById("mesMensal").value||hojeISO().slice(0,7);const [a,m]=ym.split("-").map(Number);mesModal=new Date(a,m-1,1);
- document.getElementById("modalTitulo").innerText=`${motoristaModal.matricula} - ${motoristaModal.nome}`;
- document.getElementById("modalSubtitulo").innerText=`${motoristaModal.periodo} | Horário base ${fmtHora(motoristaModal.horario_base)}`;
- document.getElementById("modalMotorista").classList.remove("oculto");
- renderCalendarioMotorista();
-}
-function fecharModalMotorista(){document.getElementById("modalMotorista").classList.add("oculto")}
-function mudarMesMotorista(delta){mesModal=new Date(mesModal.getFullYear(),mesModal.getMonth()+delta,1);renderCalendarioMotorista()}
-function dadosMesMotorista(){
- const ano=mesModal.getFullYear(),mes=mesModal.getMonth()+1,total=diasNoMes(ano,mes),arr=[];
- for(let d=1;d<=total;d++){const data=`${ano}-${String(mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;arr.push({data,...situacaoNoDia(motoristaModal,data)})}
- return arr;
-}
-function renderCalendarioMotorista(){
- const ano=mesModal.getFullYear(),mes=mesModal.getMonth()+1,dados=dadosMesMotorista(),primeiro=new Date(ano,mes-1,1).getDay(),offset=(primeiro+6)%7;
- document.getElementById("tituloMesMotorista").innerText=nomeMes(ano,mes).toUpperCase();
- let html='<div class="calendario-grid">'+["SEG","TER","QUA","QUI","SEX","SÁB","DOM"].map(x=>`<div class="calendario-dia-semana">${x}</div>`).join("");
- for(let i=0;i<offset;i++)html+='<div class="cal-dia vazio"></div>';
- dados.forEach((x,idx)=>{const dia=idx+1,cls=x.situacao==="Disponível"?"disponivel":x.situacao==="Em cobertura"?"cobertura":"indisponivel";html+=`<div class="cal-dia ${cls}"><div class="num">${dia}</div><div class="estado">${x.situacao==="Disponível"?"Plantão":x.situacao==="Em cobertura"?`${x.linha}<br>${x.motivo}`:`${x.motivo}`}</div></div>`});
- html+="</div>";document.getElementById("calendarioMotorista").innerHTML=html;
- const blocos=[];let ini=0;for(let i=1;i<=dados.length;i++){const ant=dados[i-1],prox=dados[i];if(i===dados.length||prox.situacao!==ant.situacao||prox.linha!==ant.linha||prox.motivo!==ant.motivo){blocos.push({inicio:dados[ini].data,fim:ant.data,...ant});ini=i}}
- document.getElementById("resumoMotorista").innerHTML=blocos.map(b=>`<div class="resumo-item"><strong>${fmtData(b.inicio)}${b.inicio!==b.fim?" até "+fmtData(b.fim):""}</strong> — ${b.situacao==="Disponível"?"Plantão":b.situacao==="Em cobertura"?`${b.linha} - ${b.motivo}`:b.motivo}</div>`).join("");
-}
-function textoEscalaMotorista(){
- const ano=mesModal.getFullYear(),mes=mesModal.getMonth()+1,dados=dadosMesMotorista();let txt=`Escala - ${motoristaModal.nome}\nMatrícula: ${motoristaModal.matricula}\n${nomeMes(ano,mes)}\n\n`;let ini=0;
- for(let i=1;i<=dados.length;i++){const ant=dados[i-1],prox=dados[i];if(i===dados.length||prox.situacao!==ant.situacao||prox.linha!==ant.linha||prox.motivo!==ant.motivo){txt+=`${fmtData(dados[ini].data)}${dados[ini].data!==ant.data?" a "+fmtData(ant.data):""} - ${ant.situacao==="Disponível"?"Plantão":ant.situacao==="Em cobertura"?`${ant.linha} - ${ant.motivo}`:ant.motivo}\n`;ini=i}}
- return txt;
-}
-function compartilharWhatsApp(){const tel=(motoristaModal.telefone||"").replace(/\D/g,"");const url=`https://wa.me/${tel}?text=${encodeURIComponent(textoEscalaMotorista())}`;window.open(url,"_blank")}
-function imprimirMotorista(){
- const titulo=document.getElementById("modalTitulo").innerText,mes=document.getElementById("tituloMesMotorista").innerText,cal=document.getElementById("calendarioMotorista").innerHTML,res=document.getElementById("resumoMotorista").innerHTML;
- const w=window.open("","_blank");w.document.write(`<html><head><title>${titulo}</title><style>body{font-family:Arial;padding:25px}.calendario-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.cal-dia,.calendario-dia-semana{border:1px solid #ccc;padding:8px;min-height:60px}.resumo-item{padding:7px;border-bottom:1px solid #ddd}</style></head><body><h2>${titulo}</h2><p>${mes}</p>${cal}<h3>Resumo</h3>${res}</body></html>`);w.document.close();w.print();
-}
-function baixarPDFMotorista(){
- const {jsPDF}=window.jspdf,doc=new jsPDF();const ano=mesModal.getFullYear(),mes=mesModal.getMonth()+1,dados=dadosMesMotorista();
- doc.setFontSize(15);doc.text("ESCALA MENSAL DO PLANTONISTA",14,16);doc.setFontSize(11);doc.text(`Matrícula: ${motoristaModal.matricula}`,14,25);doc.text(`Nome: ${motoristaModal.nome}`,14,32);doc.text(`Período: ${motoristaModal.periodo} | Horário base: ${fmtHora(motoristaModal.horario_base)}`,14,39);doc.text(`Mês: ${nomeMes(ano,mes)}`,14,46);
- let y=57;doc.setFontSize(9);dados.forEach(x=>{const linha=`${fmtData(x.data)} - ${x.situacao==="Disponível"?"Plantão":x.situacao==="Em cobertura"?`${x.linha} - ${x.motivo}`:x.motivo}`;doc.text(linha,14,y);y+=5;if(y>285){doc.addPage();y=15}});
- const nome=(motoristaModal.nome||"motorista").replace(/[^a-zA-Z0-9À-ÿ]+/g,"_");doc.save(`Escala_${motoristaModal.matricula}_${nome}_${String(mes).padStart(2,"0")}_${ano}.pdf`);
-}
-
-document.getElementById("cobLinha").addEventListener("change",()=>{const x=linhas.find(a=>a.id==document.getElementById("cobLinha").value);if(x){document.getElementById("cobPeriodo").value=x.periodo||"";document.getElementById("cobHorario").value=fmtHora(x.horario).replace("-","")}});
-document.getElementById("necLinha").addEventListener("change",()=>{const x=linhas.find(a=>a.id==document.getElementById("necLinha").value);if(x){document.getElementById("necPeriodo").value=x.periodo||"";document.getElementById("necHorario").value=fmtHora(x.horario).replace("-","")}});
-
-supabaseClient.auth.onAuthStateChange((event)=>{if(event==="PASSWORD_RECOVERY"){esconderAuth();document.getElementById("appTela").classList.add("oculto");document.getElementById("novaSenhaTela").classList.remove("oculto")}});
-(async()=>{const {data}=await supabaseClient.auth.getSession();if(data.session)await mostrarSistema();else voltarLogin()})();
+function estado(p,d){let i=I.find(x=>x.plantonista_id===p.id&&x.data_inicio<=d&&x.data_fim>=d);if(i)return{sit:"Indisponível",lin:"-",mot:i.tipo||"Indisponível"};let c=C.find(x=>x.plantonista_id===p.id&&x.status==="ATIVA"&&x.data_inicio<=d&&x.data_fim>=d);if(c)return{sit:"Em cobertura",lin:linha(c.linha_id),mot:motivo(c.motivo_id),c};return{sit:"Disponível",lin:"-",mot:"-"}}
+function montarLista(){let d=fData.value||isoHoje();lista=P.filter(x=>x.ativo).map(p=>({...p,...estado(p,d)}));kTotal.innerText=lista.length;kDisp.innerText=lista.filter(x=>x.sit==="Disponível").length;kCob.innerText=lista.filter(x=>x.sit==="Em cobertura").length;kInd.innerText=lista.filter(x=>x.sit==="Indisponível").length;renderLista()}
+function setSit(s){fSituacao.value=s;renderLista()}
+function renderLista(){let q=fBusca.value.toLowerCase(),per=fPeriodo.value,sit=fSituacao.value,lin=fLinha.value;let a=lista.filter(x=>(!q||x.nome.toLowerCase().includes(q)||String(x.matricula).includes(q))&&(!per||x.periodo===per)&&(!sit||x.sit===sit)&&(!lin||String(x.c?.linha_id||"")===lin));tbody.innerHTML=a.length?a.map(x=>`<tr><td>${x.matricula}</td><td><span class="name" onclick="abrirMotorista(${x.id})">${x.nome}</span></td><td>${x.periodo}</td><td>${hora(x.horario_base)}</td><td><span class="badge ${x.sit==="Disponível"?"available":x.sit==="Em cobertura"?"cover":"off"}">${x.sit}</span></td><td>${x.lin}</td><td>${x.mot}</td></tr>`).join(""):'<tr><td colspan="7" style="text-align:center;padding:28px;color:#777">Nenhum motorista encontrado.</td></tr>'}
+function abrirCadastro(){mId.value=mMat.value=mNome.value=mTel.value=mPer.value=mHora.value="";mMsg.innerText="";modalCadastro.classList.remove("hide")}
+function horaBase(){mHora.value=mPer.value==="Manhã"?"05:00":mPer.value==="Tarde"?"15:00":""}
+async function salvarMotorista(){if(!mMat.value.trim()||!mNome.value.trim()||!mPer.value){mMsg.className="msg err";mMsg.innerText="Preencha matrícula, nome e período.";return}let r=await sb.from("plantonistas").insert({matricula:mMat.value.trim(),nome:mNome.value.trim().toUpperCase(),telefone:mTel.value.trim()||null,periodo:mPer.value,horario_base:mHora.value,ativo:true});if(r.error){mMsg.className="msg err";mMsg.innerText=r.error.message;return}fechar("modalCadastro");await carregar()}
+function abrirCobertura(){cMot.value=cLin.value=cMotivo.value=cPer.value=cHora.value=cIni.value=cFim.value=cObs.value="";cMsg.innerText="";modalCobertura.classList.remove("hide")}
+cLin.addEventListener("change",()=>{let x=L.find(a=>a.id==cLin.value);if(x){cPer.value=x.periodo||"";cHora.value=x.horario?x.horario.slice(0,5):""}})
+async function salvarCobertura(){let pid=+cMot.value,li=+cLin.value,mi=+cMotivo.value;if(!pid||!li||!mi||!cPer.value||!cIni.value||!cFim.value){cMsg.className="msg err";cMsg.innerText="Preencha os campos obrigatórios.";return}if(cFim.value<cIni.value){cMsg.className="msg err";cMsg.innerText="A data final é inválida.";return}let conflito=C.find(x=>x.plantonista_id===pid&&x.status==="ATIVA"&&cIni.value<=x.data_fim&&x.data_inicio<=cFim.value);let ind=I.find(x=>x.plantonista_id===pid&&cIni.value<=x.data_fim&&x.data_inicio<=cFim.value);if(conflito||ind){cMsg.className="msg err";cMsg.innerText="Este motorista já está ocupado/indisponível nesse período.";return}let r=await sb.from("coberturas").insert({plantonista_id:pid,linha_id:li,motivo_id:mi,periodo:cPer.value,horario_linha:cHora.value||null,data_inicio:cIni.value,data_fim:cFim.value,observacao:cObs.value.trim()||null,status:"ATIVA"});if(r.error){cMsg.className="msg err";cMsg.innerText=r.error.message;return}fechar("modalCobertura");await carregar()}
+function abrirMotorista(id){atual=P.find(x=>x.id===id);let d=fData.value?new Date(fData.value+"T12:00:00"):new Date();mesAtual=new Date(d.getFullYear(),d.getMonth(),1);calNome.innerText=atual.matricula+" - "+atual.nome;calSub.innerText=atual.periodo+" | "+hora(atual.horario_base);modalMotorista.classList.remove("hide");renderCal()}
+function mudarMes(n){mesAtual=new Date(mesAtual.getFullYear(),mesAtual.getMonth()+n,1);renderCal()}
+function dadosMes(){let a=mesAtual.getFullYear(),m=mesAtual.getMonth()+1,n=new Date(a,m,0).getDate(),r=[];for(let d=1;d<=n;d++){let dt=`${a}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;r.push({data:dt,...estado(atual,dt)})}return r}
+function blocos(d){let out=[],ini=0;for(let i=1;i<=d.length;i++){let a=d[i-1],b=d[i];if(i===d.length||a.sit!==b.sit||a.lin!==b.lin||a.mot!==b.mot){out.push({ini:d[ini].data,fim:a.data,...a});ini=i}}return out}
+function renderCal(){let a=mesAtual.getFullYear(),m=mesAtual.getMonth()+1,d=dadosMes(),off=(new Date(a,m-1,1).getDay()+6)%7;calMes.innerText=new Date(a,m-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"}).toUpperCase();let h='<div class="calendar">'+["SEG","TER","QUA","QUI","SEX","SÁB","DOM"].map(x=>`<div class="dow">${x}</div>`).join("");for(let i=0;i<off;i++)h+='<div class="day blank"></div>';d.forEach((x,i)=>h+=`<div class="day ${x.sit==="Disponível"?"available":x.sit==="Em cobertura"?"cover":"off"}"><b>${i+1}</b>${x.sit==="Disponível"?"Plantão":x.sit==="Em cobertura"?x.lin+"<br>"+x.mot:x.mot}</div>`);cal.innerHTML=h+"</div>";resumo.innerHTML=blocos(d).map(x=>`<div><b>${dataBR(x.ini)}${x.ini!==x.fim?" até "+dataBR(x.fim):""}</b> — ${x.sit==="Disponível"?"Plantão":x.sit==="Em cobertura"?x.lin+" - "+x.mot:x.mot}</div>`).join("")}
+function texto(){let a=mesAtual.getFullYear(),m=mesAtual.getMonth()+1,t=`Escala - ${atual.nome}\nMatrícula: ${atual.matricula}\n${calMes.innerText}\n\n`;blocos(dadosMes()).forEach(x=>t+=`${dataBR(x.ini)}${x.ini!==x.fim?" a "+dataBR(x.fim):""} - ${x.sit==="Disponível"?"Plantão":x.sit==="Em cobertura"?x.lin+" - "+x.mot:x.mot}\n`);return t}
+function whatsapp(){let tel=(atual.telefone||"").replace(/\D/g,"");window.open(`https://wa.me/${tel}?text=${encodeURIComponent(texto())}`,"_blank")}
+function pdf(){let {jsPDF}=window.jspdf,doc=new jsPDF();doc.setFontSize(15);doc.text("ESCALA MENSAL DO PLANTONISTA",14,16);doc.setFontSize(10);doc.text(`Matrícula: ${atual.matricula}`,14,25);doc.text(`Nome: ${atual.nome}`,14,31);doc.text(`Período: ${atual.periodo} | Horário: ${hora(atual.horario_base)}`,14,37);doc.text(`Mês: ${calMes.innerText}`,14,43);let y=54;blocos(dadosMes()).forEach(x=>{doc.text(`${dataBR(x.ini)}${x.ini!==x.fim?" a "+dataBR(x.fim):""} - ${x.sit==="Disponível"?"Plantão":x.sit==="Em cobertura"?x.lin+" - "+x.mot:x.mot}`,14,y);y+=7});doc.save(`Escala_${atual.matricula}_${mesAtual.getMonth()+1}_${mesAtual.getFullYear()}.pdf`)}
+function imprimir(){let w=window.open("","_blank");w.document.write(`<html><head><title>Escala</title><style>body{font-family:Arial;padding:25px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.day,.dow{border:1px solid #ccc;padding:7px;min-height:55px}.summary div{padding:6px;border-bottom:1px solid #ddd}</style></head><body><h2>${calNome.innerText}</h2><h3>${calMes.innerText}</h3>${cal.innerHTML}<h3>Resumo</h3>${resumo.innerHTML}</body></html>`);w.document.close();w.print()}
+(async()=>{let {data}=await sb.auth.getSession();if(data.session)iniciar()})();
 </script>
 </body>
 </html>
