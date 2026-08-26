@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escala do Plantão</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 30px auto;
+    }
+
+    .topo {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .topo h1 {
+      margin-bottom: 5px;
+    }
+
+    .topo p {
+      color: #666;
+    }
+
+    .login-box {
+      max-width: 400px;
+      margin: 80px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+    }
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    button {
+      background: #1f7a5a;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .btn-sair {
+      width: auto;
+      padding: 10px 18px;
+      background: #b83232;
+      float: right;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .card strong {
+      font-size: 28px;
+    }
+
+    .painel {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background: #f0f2f4;
+    }
+
+    .status-disponivel {
+      color: #16803d;
+      font-weight: bold;
+    }
+
+    .status-cobertura {
+      color: #1769aa;
+      font-weight: bold;
+    }
+
+    .oculto {
+      display: none;
+    }
+
+    .erro {
+      color: #c62828;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 700px) {
+      table {
+        font-size: 13px;
+      }
+
+      th,
+      td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="loginTela" class="login-box">
+    <h2>Escala do Plantão</h2>
+
+    <label>E-mail</label>
+    <input type="email" id="email" placeholder="Digite seu e-mail">
+
+    <label>Senha</label>
+    <input type="password" id="senha" placeholder="Digite sua senha">
+
+    <button onclick="entrar()">Entrar</button>
+
+    <div id="erroLogin" class="erro"></div>
+  </div>
+
+  <div id="appTela" class="container oculto">
+
+    <div class="topo">
+      <button class="btn-sair" onclick="sair()">Sair</button>
+
+      <h1>Escala do Plantão</h1>
+      <p id="dataHoje"></p>
+    </div>
+
+    <div class="cards">
+
+      <div class="card">
+        <h3>Total de Plantonistas</h3>
+        <strong id="totalPlantonistas">0</strong>
+      </div>
+
+      <div class="card">
+        <h3>Disponíveis</h3>
+        <strong id="totalDisponiveis">0</strong>
+      </div>
+
+      <div class="card">
+        <h3>Em Cobertura</h3>
+        <strong id="totalCobertura">0</strong>
+      </div>
+
+    </div>
+
+    <div class="painel">
+
+      <h2>Escala de Hoje</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Matrícula</th>
+            <th>Plantonista</th>
+            <th>Período</th>
+            <th>Situação</th>
+            <th>Linha</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+
+        <tbody id="tabelaEscala"></tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    // ============================================
+    // CONFIGURAÇÃO DO SUPABASE
+    // ============================================
+
+    const SUPABASE_URL = "https://chmkhlfmbvnppygjhxsx.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
+
+    const supabaseClient = supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+
+    // ============================================
+    // LOGIN
+    // ============================================
+
+    async function entrar() {
+
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      document.getElementById("erroLogin").innerText = "";
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: senha
+      });
+
+      if (error) {
+        document.getElementById("erroLogin").innerText =
+          "E-mail ou senha incorretos.";
+        return;
+      }
+
+      mostrarSistema();
+    }
+
+
+    // ============================================
+    // LOGOUT
+    // ============================================
+
+    async function sair() {
+
+      await supabaseClient.auth.signOut();
+
+      document.getElementById("appTela").classList.add("oculto");
+      document.getElementById("loginTela").classList.remove("oculto");
+
+    }
+
+
+    // ============================================
+    // MOSTRAR SISTEMA
+    // ============================================
+
+    async function mostrarSistema() {
+
+      document.getElementById("loginTela").classList.add("oculto");
+      document.getElementById("appTela").classList.remove("oculto");
+
+      const hoje = new Date();
+
+      document.getElementById("dataHoje").innerText =
+        hoje.toLocaleDateString("pt-BR", {
+          weekday: "long",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        });
+
+      await carregarEscala();
+
+    }
+
+
+    // ============================================
+    // CARREGAR ESCALA
+    // ============================================
+
+    async function carregarEscala() {
+
+      const hoje = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      const { data: plantonistas, error: erroPlantonistas } =
+        await supabaseClient
+          .from("plantonistas")
+          .select("*")
+          .eq("ativo", true)
+          .order("nome");
+
+      if (erroPlantonistas) {
+        console.error(erroPlantonistas);
+        return;
+      }
+
+      const { data: escalas, error: erroEscalas } =
+        await supabaseClient
+          .from("escalas")
+          .select("*")
+          .lte("data_inicio", hoje)
+          .gte("data_fim", hoje);
+
+      if (erroEscalas) {
+        console.error(erroEscalas);
+        return;
+      }
+
+      const tbody =
+        document.getElementById("tabelaEscala");
+
+      tbody.innerHTML = "";
+
+      let disponiveis = 0;
+      let cobertura = 0;
+
+      plantonistas.forEach(plantonista => {
+
+        const escala =
+          escalas.find(
+            e => e.plantonista_id === plantonista.id
+          );
+
+        let situacao = "Disponível";
+        let linha = "-";
+        let motivo = "-";
+        let classe = "status-disponivel";
+
+        if (escala) {
+
+          situacao = "Em cobertura";
+          linha = escala.linha || "-";
+          motivo = escala.motivo || "-";
+          classe = "status-cobertura";
+
+          cobertura++;
+
+        } else {
+
+          disponiveis++;
+
+        }
+
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${plantonista.matricula}</td>
+          <td>${plantonista.nome}</td>
+          <td>${plantonista.periodo}</td>
+          <td class="${classe}">${situacao}</td>
+          <td>${linha}</td>
+          <td>${motivo}</td>
+        `;
+
+        tbody.appendChild(tr);
+
+      });
+
+      document.getElementById("totalPlantonistas").innerText =
+        plantonistas.length;
+
+      document.getElementById("totalDisponiveis").innerText =
+        disponiveis;
+
+      document.getElementById("totalCobertura").innerText =
+        cobertura;
+
+    }
+
+
+    // ============================================
+    // VERIFICAR LOGIN AO ABRIR
+    // ============================================
+
+    async function verificarSessao() {
+
+      const { data } =
+        await supabaseClient.auth.getSession();
+
+      if (data.session) {
+        mostrarSistema();
+      }
+
+    }
+
+    verificarSessao();
+
+  </script>
+
+</body>
+</html>
