@@ -43,7 +43,7 @@
     }
 
     .login-box {
-      max-width: 400px;
+      max-width: 420px;
       margin: 80px auto;
       background: #ffffff;
       padding: 30px;
@@ -54,6 +54,17 @@
     .login-box h2 {
       margin-bottom: 20px;
       text-align: center;
+    }
+
+    .login-box p {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      margin-top: 5px;
     }
 
     input,
@@ -81,11 +92,26 @@
       opacity: 0.9;
     }
 
+    .btn-secundario {
+      background: transparent;
+      color: #1f7a5a;
+      border: 1px solid #1f7a5a;
+    }
+
     .btn-sair {
       width: auto;
       padding: 10px 18px;
       background: #b83232;
       float: right;
+    }
+
+    .link {
+      display: block;
+      text-align: center;
+      color: #1f7a5a;
+      cursor: pointer;
+      margin-top: 5px;
+      text-decoration: underline;
     }
 
     .cards {
@@ -118,12 +144,14 @@
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       margin-bottom: 20px;
+      overflow-x: auto;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
+      min-width: 700px;
     }
 
     th,
@@ -154,9 +182,26 @@
     .erro {
       color: #c62828;
       margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    .sucesso {
+      color: #16803d;
+      margin-top: 10px;
+      line-height: 1.4;
     }
 
     @media (max-width: 700px) {
+      .container {
+        width: 96%;
+        margin-top: 15px;
+      }
+
+      .login-box {
+        width: 92%;
+        margin: 40px auto;
+      }
+
       table {
         font-size: 13px;
       }
@@ -171,28 +216,136 @@
 
 <body>
 
+  <!-- =========================
+       LOGIN
+  ========================== -->
+
   <div id="loginTela" class="login-box">
     <h2>Escala do Plantão</h2>
 
     <label>E-mail</label>
-    <input type="email" id="email" placeholder="Digite seu e-mail">
+    <input
+      type="email"
+      id="email"
+      placeholder="Digite seu e-mail"
+      autocomplete="email"
+    >
 
     <label>Senha</label>
-    <input type="password" id="senha" placeholder="Digite sua senha">
+    <input
+      type="password"
+      id="senha"
+      placeholder="Digite sua senha"
+      autocomplete="current-password"
+    >
 
     <button onclick="entrar()">Entrar</button>
+
+    <span class="link" onclick="abrirRecuperacao()">
+      Esqueci minha senha
+    </span>
 
     <div id="erroLogin" class="erro"></div>
   </div>
 
+
+  <!-- =========================
+       SOLICITAR RECUPERAÇÃO
+  ========================== -->
+
+  <div id="recuperarTela" class="login-box oculto">
+
+    <h2>Recuperar senha</h2>
+
+    <p>
+      Informe seu e-mail. Você receberá um link para criar uma nova senha.
+    </p>
+
+    <label>E-mail</label>
+
+    <input
+      type="email"
+      id="emailRecuperacao"
+      placeholder="Digite seu e-mail"
+      autocomplete="email"
+    >
+
+    <button onclick="enviarRecuperacao()">
+      Enviar link de recuperação
+    </button>
+
+    <button
+      class="btn-secundario"
+      onclick="voltarLogin()"
+    >
+      Voltar
+    </button>
+
+    <div id="mensagemRecuperacao"></div>
+
+  </div>
+
+
+  <!-- =========================
+       DEFINIR NOVA SENHA
+  ========================== -->
+
+  <div id="novaSenhaTela" class="login-box oculto">
+
+    <h2>Nova senha</h2>
+
+    <p>
+      Digite sua nova senha para acessar o sistema.
+    </p>
+
+    <label>Nova senha</label>
+
+    <input
+      type="password"
+      id="novaSenha"
+      placeholder="Digite a nova senha"
+      autocomplete="new-password"
+    >
+
+    <label>Confirmar nova senha</label>
+
+    <input
+      type="password"
+      id="confirmarNovaSenha"
+      placeholder="Digite novamente"
+      autocomplete="new-password"
+    >
+
+    <button onclick="alterarSenha()">
+      Salvar nova senha
+    </button>
+
+    <div id="mensagemNovaSenha"></div>
+
+  </div>
+
+
+  <!-- =========================
+       SISTEMA
+  ========================== -->
+
   <div id="appTela" class="container oculto">
 
     <div class="topo">
-      <button class="btn-sair" onclick="sair()">Sair</button>
+
+      <button
+        class="btn-sair"
+        onclick="sair()"
+      >
+        Sair
+      </button>
 
       <h1>Escala do Plantão</h1>
+
       <p id="dataHoje"></p>
+
     </div>
+
 
     <div class="cards">
 
@@ -213,11 +366,13 @@
 
     </div>
 
+
     <div class="painel">
 
       <h2>Escala de Hoje</h2>
 
       <table>
+
         <thead>
           <tr>
             <th>Matrícula</th>
@@ -230,20 +385,24 @@
         </thead>
 
         <tbody id="tabelaEscala"></tbody>
+
       </table>
 
     </div>
 
   </div>
 
+
   <script>
 
-    // ============================================
+    // ==========================================================
     // CONFIGURAÇÃO DO SUPABASE
-    // ============================================
+    // ==========================================================
 
     const SUPABASE_URL = "https://chmkhlfmbvnppygjhxsx.supabase.co/rest/v1/";
-    const SUPABASE_KEY = "sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
+
+    const SUPABASE_KEY =
+      "sb_publishable_Bv7x7jufiVP1aPxOHBJ32A_aX783DbD";
 
     const supabaseClient = supabase.createClient(
       SUPABASE_URL,
@@ -251,182 +410,645 @@
     );
 
 
-    // ============================================
-    // LOGIN
-    // ============================================
+    // ==========================================================
+    // URL DO SISTEMA
+    // ==========================================================
 
-    async function entrar() {
+    const URL_SISTEMA =
+      "https://plantaaoadm.github.io/painel-plantonistas/";
 
-      const email = document.getElementById("email").value.trim();
-      const senha = document.getElementById("senha").value;
 
-      document.getElementById("erroLogin").innerText = "";
+    // ==========================================================
+    // CONTROLE DAS TELAS
+    // ==========================================================
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({
-        email: email,
-        password: senha
-      });
+    function esconderTelas() {
 
-      if (error) {
-        document.getElementById("erroLogin").innerText =
-          "E-mail ou senha incorretos.";
-        return;
-      }
+      document
+        .getElementById("loginTela")
+        .classList.add("oculto");
 
-      mostrarSistema();
+      document
+        .getElementById("recuperarTela")
+        .classList.add("oculto");
+
+      document
+        .getElementById("novaSenhaTela")
+        .classList.add("oculto");
+
+      document
+        .getElementById("appTela")
+        .classList.add("oculto");
+
     }
 
 
-    // ============================================
+    function voltarLogin() {
+
+      esconderTelas();
+
+      document
+        .getElementById("loginTela")
+        .classList.remove("oculto");
+
+    }
+
+
+    function abrirRecuperacao() {
+
+      esconderTelas();
+
+      const emailLogin =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      document
+        .getElementById("emailRecuperacao")
+        .value = emailLogin;
+
+      document
+        .getElementById("recuperarTela")
+        .classList.remove("oculto");
+
+    }
+
+
+    // ==========================================================
+    // LOGIN
+    // ==========================================================
+
+    async function entrar() {
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const senha =
+        document
+          .getElementById("senha")
+          .value;
+
+      const erroLogin =
+        document.getElementById("erroLogin");
+
+      erroLogin.innerText = "";
+
+
+      if (!email || !senha) {
+
+        erroLogin.innerText =
+          "Informe o e-mail e a senha.";
+
+        return;
+      }
+
+
+      const { error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: senha
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        erroLogin.innerText =
+          "E-mail ou senha incorretos.";
+
+        return;
+      }
+
+
+      await mostrarSistema();
+
+    }
+
+
+    // ==========================================================
     // LOGOUT
-    // ============================================
+    // ==========================================================
 
     async function sair() {
 
       await supabaseClient.auth.signOut();
 
-      document.getElementById("appTela").classList.add("oculto");
-      document.getElementById("loginTela").classList.remove("oculto");
+      document
+        .getElementById("senha")
+        .value = "";
+
+      voltarLogin();
 
     }
 
 
-    // ============================================
+    // ==========================================================
+    // ENVIAR RECUPERAÇÃO DE SENHA
+    // ==========================================================
+
+    async function enviarRecuperacao() {
+
+      const email =
+        document
+          .getElementById("emailRecuperacao")
+          .value
+          .trim();
+
+      const mensagem =
+        document
+          .getElementById("mensagemRecuperacao");
+
+      mensagem.className = "";
+      mensagem.innerText = "";
+
+
+      if (!email) {
+
+        mensagem.className = "erro";
+
+        mensagem.innerText =
+          "Digite seu e-mail.";
+
+        return;
+      }
+
+
+      const { error } =
+        await supabaseClient.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo: URL_SISTEMA
+          }
+        );
+
+
+      if (error) {
+
+        console.error(error);
+
+        mensagem.className = "erro";
+
+        mensagem.innerText =
+          "Não foi possível enviar o e-mail de recuperação.";
+
+        return;
+      }
+
+
+      mensagem.className = "sucesso";
+
+      mensagem.innerText =
+        "Link enviado. Verifique seu e-mail e clique no link para criar uma nova senha.";
+
+    }
+
+
+    // ==========================================================
+    // ALTERAR SENHA
+    // ==========================================================
+
+    async function alterarSenha() {
+
+      const senha =
+        document
+          .getElementById("novaSenha")
+          .value;
+
+      const confirmar =
+        document
+          .getElementById("confirmarNovaSenha")
+          .value;
+
+      const mensagem =
+        document
+          .getElementById("mensagemNovaSenha");
+
+      mensagem.className = "";
+      mensagem.innerText = "";
+
+
+      if (senha.length < 6) {
+
+        mensagem.className = "erro";
+
+        mensagem.innerText =
+          "A senha deve ter pelo menos 6 caracteres.";
+
+        return;
+      }
+
+
+      if (senha !== confirmar) {
+
+        mensagem.className = "erro";
+
+        mensagem.innerText =
+          "As senhas não são iguais.";
+
+        return;
+      }
+
+
+      const { error } =
+        await supabaseClient.auth.updateUser({
+          password: senha
+        });
+
+
+      if (error) {
+
+        console.error(error);
+
+        mensagem.className = "erro";
+
+        mensagem.innerText =
+          "Não foi possível alterar a senha.";
+
+        return;
+      }
+
+
+      mensagem.className = "sucesso";
+
+      mensagem.innerText =
+        "Senha alterada com sucesso.";
+
+
+      setTimeout(async () => {
+
+        await mostrarSistema();
+
+      }, 1000);
+
+    }
+
+
+    // ==========================================================
     // MOSTRAR SISTEMA
-    // ============================================
+    // ==========================================================
 
     async function mostrarSistema() {
 
-      document.getElementById("loginTela").classList.add("oculto");
-      document.getElementById("appTela").classList.remove("oculto");
+      esconderTelas();
+
+      document
+        .getElementById("appTela")
+        .classList.remove("oculto");
+
 
       const hoje = new Date();
 
-      document.getElementById("dataHoje").innerText =
-        hoje.toLocaleDateString("pt-BR", {
-          weekday: "long",
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric"
-        });
+
+      document
+        .getElementById("dataHoje")
+        .innerText =
+        hoje.toLocaleDateString(
+          "pt-BR",
+          {
+            weekday: "long",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+          }
+        );
+
 
       await carregarEscala();
 
     }
 
 
-    // ============================================
+    // ==========================================================
+    // OBTER DATA LOCAL
+    // Evita problema do UTC alterar o dia
+    // ==========================================================
+
+    function obterDataLocal() {
+
+      const data = new Date();
+
+      const ano =
+        data.getFullYear();
+
+      const mes =
+        String(
+          data.getMonth() + 1
+        ).padStart(2, "0");
+
+      const dia =
+        String(
+          data.getDate()
+        ).padStart(2, "0");
+
+
+      return `${ano}-${mes}-${dia}`;
+
+    }
+
+
+    // ==========================================================
     // CARREGAR ESCALA
-    // ============================================
+    // ==========================================================
 
     async function carregarEscala() {
 
-      const hoje = new Date()
-        .toISOString()
-        .split("T")[0];
+      const hoje =
+        obterDataLocal();
 
-      const { data: plantonistas, error: erroPlantonistas } =
+
+      const {
+        data: plantonistas,
+        error: erroPlantonistas
+      } =
         await supabaseClient
           .from("plantonistas")
           .select("*")
           .eq("ativo", true)
           .order("nome");
 
+
       if (erroPlantonistas) {
-        console.error(erroPlantonistas);
+
+        console.error(
+          "Erro plantonistas:",
+          erroPlantonistas
+        );
+
         return;
+
       }
 
-      const { data: escalas, error: erroEscalas } =
+
+      const {
+        data: escalas,
+        error: erroEscalas
+      } =
         await supabaseClient
           .from("escalas")
           .select("*")
           .lte("data_inicio", hoje)
           .gte("data_fim", hoje);
 
+
       if (erroEscalas) {
-        console.error(erroEscalas);
+
+        console.error(
+          "Erro escalas:",
+          erroEscalas
+        );
+
         return;
+
       }
 
+
       const tbody =
-        document.getElementById("tabelaEscala");
+        document
+          .getElementById("tabelaEscala");
+
 
       tbody.innerHTML = "";
+
 
       let disponiveis = 0;
       let cobertura = 0;
 
-      plantonistas.forEach(plantonista => {
 
-        const escala =
-          escalas.find(
-            e => e.plantonista_id === plantonista.id
-          );
+      plantonistas.forEach(
+        plantonista => {
 
-        let situacao = "Disponível";
-        let linha = "-";
-        let motivo = "-";
-        let classe = "status-disponivel";
+          const escala =
+            escalas.find(
+              item =>
+                item.plantonista_id ===
+                plantonista.id
+            );
 
-        if (escala) {
 
-          situacao = "Em cobertura";
-          linha = escala.linha || "-";
-          motivo = escala.motivo || "-";
-          classe = "status-cobertura";
+          let situacao =
+            "Disponível";
 
-          cobertura++;
+          let linha =
+            "-";
 
-        } else {
+          let motivo =
+            "-";
 
-          disponiveis++;
+          let classe =
+            "status-disponivel";
+
+
+          if (escala) {
+
+            situacao =
+              "Em cobertura";
+
+            linha =
+              escala.linha || "-";
+
+            motivo =
+              escala.motivo || "-";
+
+            classe =
+              "status-cobertura";
+
+            cobertura++;
+
+          } else {
+
+            disponiveis++;
+
+          }
+
+
+          const tr =
+            document.createElement("tr");
+
+
+          tr.innerHTML = `
+            <td>${plantonista.matricula}</td>
+            <td>${plantonista.nome}</td>
+            <td>${plantonista.periodo}</td>
+            <td class="${classe}">
+              ${situacao}
+            </td>
+            <td>${linha}</td>
+            <td>${motivo}</td>
+          `;
+
+
+          tbody.appendChild(tr);
 
         }
+      );
 
-        const tr = document.createElement("tr");
 
-        tr.innerHTML = `
-          <td>${plantonista.matricula}</td>
-          <td>${plantonista.nome}</td>
-          <td>${plantonista.periodo}</td>
-          <td class="${classe}">${situacao}</td>
-          <td>${linha}</td>
-          <td>${motivo}</td>
-        `;
-
-        tbody.appendChild(tr);
-
-      });
-
-      document.getElementById("totalPlantonistas").innerText =
+      document
+        .getElementById("totalPlantonistas")
+        .innerText =
         plantonistas.length;
 
-      document.getElementById("totalDisponiveis").innerText =
+
+      document
+        .getElementById("totalDisponiveis")
+        .innerText =
         disponiveis;
 
-      document.getElementById("totalCobertura").innerText =
+
+      document
+        .getElementById("totalCobertura")
+        .innerText =
         cobertura;
 
     }
 
 
-    // ============================================
-    // VERIFICAR LOGIN AO ABRIR
-    // ============================================
+    // ==========================================================
+    // EVENTOS DE AUTENTICAÇÃO
+    // ==========================================================
 
-    async function verificarSessao() {
+    supabaseClient.auth.onAuthStateChange(
+      async (event, session) => {
 
-      const { data } =
+        console.log(
+          "Evento Supabase:",
+          event
+        );
+
+
+        if (
+          event ===
+          "PASSWORD_RECOVERY"
+        ) {
+
+          esconderTelas();
+
+          document
+            .getElementById("novaSenhaTela")
+            .classList.remove("oculto");
+
+          return;
+
+        }
+
+
+        if (
+          event ===
+          "SIGNED_IN"
+        ) {
+
+          /*
+          Não chamamos automaticamente
+          mostrarSistema aqui porque o evento
+          também pode ocorrer durante recuperação.
+          */
+
+        }
+
+
+        if (
+          event ===
+          "SIGNED_OUT"
+        ) {
+
+          voltarLogin();
+
+        }
+
+      }
+    );
+
+
+    // ==========================================================
+    // VERIFICAR AO ABRIR O SITE
+    // ==========================================================
+
+    async function iniciarSistema() {
+
+      /*
+      Se o link enviado pelo Supabase
+      possuir informações de recuperação,
+      o onAuthStateChange acima detectará
+      PASSWORD_RECOVERY.
+      */
+
+      await new Promise(
+        resolve =>
+          setTimeout(resolve, 500)
+      );
+
+
+      const {
+        data,
+        error
+      } =
         await supabaseClient.auth.getSession();
 
+
+      if (error) {
+
+        console.error(error);
+
+        voltarLogin();
+
+        return;
+
+      }
+
+
+      /*
+      Verifica se a URL indica
+      recuperação de senha.
+      */
+
+      const hash =
+        window.location.hash;
+
+      const query =
+        window.location.search;
+
+
+      const recuperacao =
+        hash.includes(
+          "type=recovery"
+        ) ||
+        query.includes(
+          "type=recovery"
+        );
+
+
+      if (recuperacao) {
+
+        esconderTelas();
+
+        document
+          .getElementById("novaSenhaTela")
+          .classList.remove("oculto");
+
+        return;
+
+      }
+
+
       if (data.session) {
-        mostrarSistema();
+
+        await mostrarSistema();
+
+      } else {
+
+        voltarLogin();
+
       }
 
     }
 
-    verificarSessao();
+
+    iniciarSistema();
 
   </script>
 
